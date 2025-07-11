@@ -1,7 +1,12 @@
+import { GeneralMaps } from "@/app/_components/GeneralMap";
 import React from "react";
 
 const LocationIntelligentTargetPage = () => {
-  return <div></div>;
+  return (
+    <div className=" size-full relative overflow-hidden">
+      <GeneralMaps />
+    </div>
+  );
 };
 
 export default LocationIntelligentTargetPage;
