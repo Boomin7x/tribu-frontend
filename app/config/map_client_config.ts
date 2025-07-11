@@ -13,6 +13,7 @@ const mapClient = axios.create({
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
+    "Content-Security-Policy": "upgrade-insecure-requests",
   },
 });
 
