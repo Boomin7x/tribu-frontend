@@ -1,0 +1,13 @@
+$primaryColor: #0caf60;
+$primaryGrayColor: #f5f5f5;
+$primaryGrayBorderColor: #e5e5e5;
+$primaryWhiteColor: #ffffff;
+$primaryErrorColor: #e33116;
+
+:root {
+  --primary: #{$primaryColor};
+  --gray: #{$primaryGrayColor};
+  --gray-border: #{$primaryGrayBorderColor};
+  --white: #{$primaryWhiteColor};
+  --error: #{$primaryErrorColor};
+}
