@@ -12,7 +12,7 @@ const mapClient = axios.create({
   baseURL: process.env.NEXT_PUBLIC_MAP_BASE_URL,
   headers: {
     "Content-Type": "application/json",
-    Accept: "application/json",
+    Accept: "*/*",
   },
 });
 
@@ -29,6 +29,7 @@ mapClient.interceptors.request.use(
     } else {
       config.headers["Content-Type"] = "application/json";
     }
+    config.headers.Accept = "/";
     return config;
   },
   (error) => {
