@@ -16,10 +16,10 @@ import AppInput from "./AppInput";
 import useGeocode from "../_hooks/useGeoCode";
 import useGeolocation from "../_hooks/useGeolocation";
 import useDebounce from "../_hooks/useDebounce";
-import AppConfig from "../_utils";
+// import AppConfig from "../_utils";
 
 const GeneralMapsComponent = () => {
-  const mapBoxKey = AppConfig.VITE_MAP_BOX_KEY;
+  //   const mapBoxKey = AppConfig.VITE_MAP_BOX_KEY;
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const { setLocation } = useGeolocation(false);
   const [address, setAddress] = useState("douala");
@@ -76,13 +76,13 @@ const GeneralMapsComponent = () => {
               console.log(e);
             }}
             mapboxAccessToken={
-              //   "pk.eyJ1IjoiYmV0cm9ib29taW4iLCJhIjoiY21jajNjOTUzMTkzcjJrc2VrNDFxZ3UwdyJ9.cMx-wHcsQi1ZJjDgb06BCA"
-              mapBoxKey
+              "pk.eyJ1IjoiYmV0cm9ib29taW4iLCJhIjoiY21jajNjOTUzMTkzcjJrc2VrNDFxZ3UwdyJ9.cMx-wHcsQi1ZJjDgb06BCA"
+              //   mapBoxKey
             }
             initialViewState={{
               longitude: geoData?.coordinates.longitude,
               latitude: geoData?.coordinates.latitude,
-              zoom: 6,
+              zoom: 12,
             }}
             style={{
               position: "absolute",
