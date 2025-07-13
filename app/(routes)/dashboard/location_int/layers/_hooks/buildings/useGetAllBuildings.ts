@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { IGetAllBuildingsParams } from "../../_utils/types/buildings_types";
+import { IGetAllBuildingsParams } from "../../_utils/types/buildings/buildings_types";
 import { MAP_QUERY_KEY } from "../../_utils/enum";
 import { buildingsApi } from "../../_utils/service/buildingsApi";
 

@@ -1,3 +1,4 @@
+import { Icon } from "@iconify/react";
 import {
   Accordion,
   AccordionDetails,
@@ -5,7 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { FC } from "react";
-import { Icon } from "@iconify/react";
+import LayerAccordionDetail from "./LayerAccordionDetail";
 
 interface ILayerAccordion {
   category: string[];
@@ -30,15 +31,10 @@ export const LayerAccordion: FC<ILayerAccordion> = ({ category, title }) => {
       <AccordionDetails>
         {category?.map((items, i) => {
           return (
-            <div
-              key={`items?.children` + i}
-              className="flex items-center justify-between p-2 border-b last:border-0"
-            >
-              <Typography className="capitalize">
-                {items?.replace(/_/g, " ")}
-              </Typography>
-              <Icon icon="mdi:eye-outline" className="size-4" />
-            </div>
+            <LayerAccordionDetail
+              key={"LayerAccordionDetail" + items + i}
+              category={items}
+            />
           );
         })}
       </AccordionDetails>

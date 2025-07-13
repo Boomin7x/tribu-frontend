@@ -5,6 +5,7 @@ import { useGetBuildingCategories } from "../../_hooks/buildings";
 export const BuildingLayers = () => {
   const { data, isLoading } = useGetBuildingCategories();
   const builgCategories = data?.data as string[];
+
   if (isLoading) {
     return <LayerAccordionLoading />;
   }

@@ -7,19 +7,13 @@ import Map, {
   NavigationControl,
   useMap,
 } from "react-map-gl/mapbox";
-// import { AppConfig, useDebounce } from "../../../../libs/shared/utils/src";
-// import useGeolocation from "../../../../libs/maps/src/hooks/use_location";
-// import useGeocode from "../../../../libs/maps/src/hooks/use_geocode";
-// import { AppInput } from "../../../../libs/forms/src";
 import AppLoader from "./AppLoader";
 import AppInput from "./AppInput";
 import useGeocode from "../_hooks/useGeoCode";
 import useGeolocation from "../_hooks/useGeolocation";
 import useDebounce from "../_hooks/useDebounce";
-// import AppConfig from "../_utils";
 
 const GeneralMapsComponent = () => {
-  //   const mapBoxKey = AppConfig.VITE_MAP_BOX_KEY;
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const { setLocation } = useGeolocation(false);
   const [address, setAddress] = useState("douala");

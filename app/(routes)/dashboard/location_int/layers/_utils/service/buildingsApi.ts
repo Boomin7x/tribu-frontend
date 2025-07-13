@@ -1,9 +1,10 @@
 import mapClient from "@/app/config/map_client_config";
 import {
   GetBuildingCategoriesResponse,
+  IBuildingApiResponse,
   IGetAllBuildingsParams,
   IGetBuildingByCategoryParams,
-} from "../types/buildings_types";
+} from "../types/buildings/buildings_types";
 
 export const buildingsApi = {
   getBuildingCategories: async (): Promise<GetBuildingCategoriesResponse> => {
@@ -16,7 +17,7 @@ export const buildingsApi = {
     building_category,
     limit,
     page,
-  }: IGetBuildingByCategoryParams) => {
+  }: IGetBuildingByCategoryParams): Promise<IBuildingApiResponse> => {
     const params = {
       ...(bbox && { bbox }),
       ...(building_category && { building_category }),
