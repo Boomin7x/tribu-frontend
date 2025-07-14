@@ -21,21 +21,26 @@ import {
   Tooltip,
   Typography,
   useTheme,
+  Button,
 } from "@mui/material";
 import React, { FC, useMemo, useState } from "react";
 import { Icon } from "@iconify/react";
 import { IBuildingApiResponse } from "../../_utils/types/buildings/buildings_types";
+import { Feature } from "geojson";
+import { convertFeatureToGeographic } from "@/app/_utils/coordinateUtils";
 
 interface IBuildingDrawerDetails {
   open: boolean;
   onClose: () => void;
   data: IBuildingApiResponse;
+  onZoomToFeature?: (feature: Feature) => void;
 }
 
 const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
   data = fakeData,
   onClose,
   open,
+  onZoomToFeature,
 }) => {
   console.log({ data });
   // Guard: Only proceed if data, data.data, and data.data.features are valid
@@ -145,6 +150,14 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
       anchor="right"
       open={open}
       onClose={onClose}
+      transitionDuration={400}
+      SlideProps={{
+        timeout: 400,
+        easing: {
+          enter: theme.transitions.easing.easeOut,
+          exit: theme.transitions.easing.sharp,
+        },
+      }}
       PaperProps={{
         sx: {
           width: { xs: "100%", sm: 480 },
@@ -153,6 +166,10 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
             0.95
           )} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`,
           backdropFilter: "blur(20px)",
+          transition: theme.transitions.create(["transform", "opacity"], {
+            duration: 400,
+            easing: theme.transitions.easing.easeInOut,
+          }),
         },
       }}
     >
@@ -394,6 +411,22 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                             </Box>
                           </Box>
                         </Box>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => {
+                            if (onZoomToFeature) {
+                              onZoomToFeature(
+                                convertFeatureToGeographic(feature as Feature)
+                              );
+                              onClose();
+                            }
+                          }}
+                          className="mt-2"
+                        >
+                          Zoom to on Map
+                        </Button>
                       </Stack>
                     </CardContent>
                   </Collapse>
@@ -423,7 +456,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
   );
 };
 
-const fakeData = {
+export const fakeData = {
   message: "Successfully retrieved the data!",
   data: {
     type: "FeatureCollection",
