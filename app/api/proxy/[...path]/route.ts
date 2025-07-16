@@ -9,29 +9,24 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ path: string[] }> }
 ) {
-  const { path } = await params;
-  const url = `${BACKEND_BASE}/${path.join("/")}${req.nextUrl.search}`;
-  // Convert NextRequest headers to a plain object for Axios, omitting 'host'
-  const headers: Record<string, string> = {};
-  req.headers.forEach((value, key) => {
-    if (key.toLowerCase() !== "host") {
-      headers[key] = value;
-    }
-  });
-
-  const axiosResponse = await axios.get(url, {
-    responseType: "arraybuffer",
-    headers,
-  });
-
-  const res = new NextResponse(axiosResponse.data, {
-    status: axiosResponse.status,
-  });
-  Object.entries(axiosResponse.headers).forEach(([k, v]) => {
-    // Axios may return headers as string or array; join if array
-    res.headers.set(k, Array.isArray(v) ? v.join(", ") : v);
-  });
-  return res;
+  try {
+    const { path } = await params;
+    const url = `${BACKEND_BASE}/${path.join("/")}${req.nextUrl.search}`;
+    console.log("Proxying to:", url);
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { ...req.headers, host: undefined },
+    });
+    const data = await response.arrayBuffer();
+    const res = new NextResponse(data, { status: response.status });
+    response.headers.forEach((v, k) => res.headers.set(k, v));
+    return res;
+  } catch (error) {
+    console.error("Proxy error:", error);
+    return new NextResponse("Proxy error: " + (error as Error).message, {
+      status: 500,
+    });
+  }
 }
 
 export async function POST(
