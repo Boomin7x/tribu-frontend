@@ -100,14 +100,14 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
     return data.data.features.filter((feature) => {
       const matchesSearch =
         searchTerm === "" ||
-        feature.properties.building
+        feature.properties?.building
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        feature.id.toString().includes(searchTerm);
+        feature.id?.toString().includes(searchTerm);
 
       const matchesFilter =
         selectedFilter === "all" ||
-        feature.properties.building === selectedFilter;
+        feature.properties?.building === selectedFilter;
 
       return matchesSearch && matchesFilter;
     });
@@ -116,7 +116,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
   // Get unique building types for filtering
   const buildingTypes = useMemo(() => {
     const types = new Set(
-      data.data.features.map((f) => f.properties.building).filter(Boolean)
+      data.data.features.map((f) => f.properties?.building).filter(Boolean)
     );
     return Array.from(types);
   }, [data.data.features]);
@@ -292,7 +292,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                   className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 dark:border-gray-700"
                 >
                   <ListItemButton
-                    onClick={() => toggleFeature(feature.id)}
+                    onClick={() => toggleFeature(feature?.id as number)}
                     className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50"
                   >
                     <ListItemIcon>
@@ -304,7 +304,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                           horizontal: "right",
                         }}
                       >
-                        {getBuildingIcon(feature.properties.building)}
+                        {getBuildingIcon(feature.properties?.building)}
                       </Badge>
                     </ListItemIcon>
                     <ListItemText
@@ -314,8 +314,17 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                             variant="subtitle1"
                             className="font-semibold"
                           >
-                            {feature.properties.building || "Unknown"} #
-                            {feature.id}
+                            {(
+                              feature.properties as {
+                                building: string;
+                                amenity: null;
+                                shop: null;
+                                office: null;
+                                tourism: null;
+                                landuse: null;
+                              }
+                            ).building || "Unknown"}{" "}
+                            #{feature.id}
                           </Typography>
                           <Chip
                             label={feature.geometry.type}
@@ -327,12 +336,19 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                       }
                       secondary={
                         <Typography variant="body2" className="text-gray-600">
-                          {formatCoordinates(feature.geometry.coordinates)}
+                          {formatCoordinates(
+                            (
+                              feature.geometry as {
+                                type: string;
+                                coordinates: number[][][];
+                              }
+                            )?.coordinates
+                          )}
                         </Typography>
                       }
                     />
                     <IconButton size="small">
-                      {expandedFeatures.has(feature.id) ? (
+                      {expandedFeatures.has(feature.id as number) ? (
                         <Icon icon="mdi:chevron-up" className="w-5 h-5" />
                       ) : (
                         <Icon icon="mdi:chevron-down" className="w-5 h-5" />
@@ -341,7 +357,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                   </ListItemButton>
 
                   <Collapse
-                    in={expandedFeatures.has(feature.id)}
+                    in={expandedFeatures.has(feature.id as number)}
                     timeout="auto"
                   >
                     <Divider />
@@ -360,7 +376,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                             Properties
                           </Typography>
                           <Box className="grid grid-cols-2 gap-2 text-sm">
-                            {Object.entries(feature.properties).map(
+                            {Object.entries(feature.properties ?? {}).map(
                               ([key, value]) => (
                                 <Box key={key} className="flex justify-between">
                                   <span className="text-gray-600 capitalize">
@@ -397,14 +413,26 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                             <Box className="flex justify-between">
                               <span className="text-gray-600">Points:</span>
                               <span className="font-medium">
-                                {feature.geometry.coordinates[0].length}
+                                {
+                                  (
+                                    feature.geometry as {
+                                      type: string;
+                                      coordinates: number[][][];
+                                    }
+                                  ).coordinates[0].length
+                                }
                               </span>
                             </Box>
                             <Box className="flex justify-between">
                               <span className="text-gray-600">Est. Area:</span>
                               <span className="font-medium">
                                 {calculateArea(
-                                  feature.geometry.coordinates
+                                  (
+                                    feature.geometry as {
+                                      type: string;
+                                      coordinates: number[][][];
+                                    }
+                                  ).coordinates
                                 ).toLocaleString()}{" "}
                                 m²
                               </span>

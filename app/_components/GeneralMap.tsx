@@ -1,39 +1,36 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import {
+  setHoveredFeature,
+  setSelectedFeature,
+  setZoomToFeature,
+} from "@/app/store/slice/map.slice";
+import type { RootState } from "@/app/store/store";
 import { Icon } from "@iconify/react";
+import { FeatureCollection } from "geojson";
 import React, { useEffect, useState } from "react";
+import type { LayerProps } from "react-map-gl/mapbox";
 import Map, {
   MapProvider,
   NavigationControl,
-  Source,
-  Layer,
   Popup,
   useMap,
 } from "react-map-gl/mapbox";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setFeatures,
-  setSelectedFeature,
-  setHoveredFeature,
-  setZoomToFeature,
-} from "@/app/store/slice/map.slice";
-import type { RootState } from "@/app/store/store";
-import AppLoader from "./AppLoader";
-import AppInput from "./AppInput";
+import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
+import useBuildingUtils from "../_hooks/useBuildingUtils";
+import useDebounce from "../_hooks/useDebounce";
 import useGeocode from "../_hooks/useGeoCode";
 import useGeolocation from "../_hooks/useGeolocation";
-import useDebounce from "../_hooks/useDebounce";
-import { FeatureCollection } from "geojson";
-import type { LayerProps } from "react-map-gl/mapbox";
-import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
+import { setZoomToFeature as setCatZoom } from "../store/slice/map_category.slice";
+import AppInput from "./AppInput";
+import AppLoader from "./AppLoader";
 
-// Function to convert projected coordinates to geographic coordinates
-// This converts from Web Mercator (EPSG:3857) to WGS84 (EPSG:4326)
 const convertProjectedToGeographic = (
   x: number,
   y: number
 ): [number, number] => {
-  // Web Mercator to WGS84 conversion
   const longitude = (x / 20037508.34) * 180;
   const latitude =
     (Math.atan(Math.exp((y * Math.PI) / 20037508.34)) * 2 - Math.PI / 2) *
@@ -41,8 +38,9 @@ const convertProjectedToGeographic = (
   return [longitude, latitude];
 };
 
-// Convert the fake data coordinates from projected to geographic
-const convertFakeDataCoordinates = (originalData: any): FeatureCollection => {
+export const convertFakeDataCoordinates = (
+  originalData: any
+): FeatureCollection => {
   if (!originalData?.data?.features) {
     return { type: "FeatureCollection", features: [] };
   }
@@ -67,7 +65,6 @@ const convertFakeDataCoordinates = (originalData: any): FeatureCollection => {
 
 const fakeData: FeatureCollection = convertFakeDataCoordinates(oldFakeData);
 
-// Debug: Log the converted coordinates
 console.log("oldFakeData:", oldFakeData);
 console.log("fakeData:", fakeData);
 console.log(
@@ -82,14 +79,8 @@ console.log(
 const GeneralMapsComponent = () => {
   const dispatch = useDispatch();
   const features = useSelector((state: RootState) => state.map.features);
-  const isDataDisplayed = useSelector(
-    (state: RootState) => state.map.toggleMavView
-  );
   const selectedFeature = useSelector(
     (state: RootState) => state.map.selectedFeature
-  );
-  const zoomToFeature = useSelector(
-    (state: RootState) => state.map.zoomToFeature
   );
 
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
@@ -99,11 +90,11 @@ const GeneralMapsComponent = () => {
   const { loading, geoData, geocode } = useGeocode();
   const [debouncedAddress] = useDebounce(address, 500);
 
-  // On mount, load fakeData into Redux
-  useEffect(() => {
-    if (isDataDisplayed) dispatch(setFeatures(fakeData.features));
-    else dispatch(setFeatures([]));
-  }, [dispatch, isDataDisplayed]);
+  // // On mount, load fakeData into Redux
+  // useEffect(() => {
+  //   if (isDataDisplayed) dispatch(setFeatures(fakeData.features));
+  //   else dispatch(setFeatures([]));
+  // }, [dispatch, isDataDisplayed]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
@@ -119,28 +110,14 @@ const GeneralMapsComponent = () => {
   useEffect(() => {
     if (geoData) {
       setLocation(geoData?.coordinates);
-      //   props.onLocationUpdate(geoData);
     }
   }, [geoData]);
 
-  // GeoJSON for Source
-  const geojson: FeatureCollection = React.useMemo(
-    () => ({
-      type: "FeatureCollection",
-      features: features,
-    }),
-    [features]
-  );
-
-  // Debug: Log geojson right before Source
-  console.log("GeoJSON at render:", geojson);
-
-  // Layer styles
   const polygonLayer: LayerProps = {
     id: "building-fill",
     type: "fill",
     paint: {
-      "fill-color": "red", // Debug: solid red for visibility
+      "fill-color": "red",
       "fill-opacity": 1, // Debug: fully opaque
     },
   };
@@ -152,6 +129,14 @@ const GeneralMapsComponent = () => {
       "line-width": 2,
     },
   };
+
+  const {
+    BuildingLayers,
+    BuildingPopups,
+    interactiveLayerIds,
+    onBuildingMapClick,
+    BuildingMarkers,
+  } = useBuildingUtils();
 
   // Handle click/hover
   const onMapClick = (e: any) => {
@@ -169,6 +154,7 @@ const GeneralMapsComponent = () => {
     } else {
       dispatch(setSelectedFeature(null));
     }
+    onBuildingMapClick(e);
   };
   const onMapHover = (e: any) => {
     const feature = e.features && e.features[0];
@@ -195,7 +181,6 @@ const GeneralMapsComponent = () => {
   console.log({
     selectedFeature,
     features: features.length,
-    geojson,
     isStyleLoaded,
     isLoaded,
     shouldRenderLayers: isStyleLoaded || isLoaded,
@@ -249,7 +234,11 @@ const GeneralMapsComponent = () => {
             // mapStyle="mapbox://styles/betroboomin/cmcj495nl000v01s81843g8k4"
             mapStyle="mapbox://styles/mapbox/streets-v11"
             // mapStyle="mapbox://styles/mapbox/satellite-v9"
-            interactiveLayerIds={["test-polygon-fill", "buildings"]}
+            interactiveLayerIds={[
+              "test-polygon-fill",
+              "buildings",
+              ...interactiveLayerIds,
+            ]}
             onClick={onMapClick}
             onMouseMove={onMapHover}
           >
@@ -262,7 +251,7 @@ const GeneralMapsComponent = () => {
             {(isStyleLoaded || isLoaded) && (
               <>
                 {/* Test polygon for debugging */}
-                <Source id="test-polygon" type="geojson" data={geojson}>
+                {/* <Source id="test-polygon" type="geojson" data={geojson}>
                   <Layer
                     id="test-polygon-fill"
                     type="fill"
@@ -272,12 +261,13 @@ const GeneralMapsComponent = () => {
                     }}
                     beforeId="waterway-label" // Try to force above all
                   />
-                </Source>
+                </Source> */}
                 {/* Your actual data source/layers */}
-                <Source id="buildings" type="geojson" data={geojson}>
+                {/* <Source id="buildings" type="geojson" data={geojson}>
                   <Layer {...polygonLayer} beforeId="waterway-label" />
                   <Layer {...outlineLayer} beforeId="waterway-label" />
-                </Source>
+                </Source> */}
+                <BuildingLayers />
               </>
             )}
             {selectedFeature && selectedFeature.geometry.type === "Polygon" && (
@@ -305,6 +295,8 @@ const GeneralMapsComponent = () => {
                 </div>
               </Popup>
             )}
+            <BuildingPopups />
+            <BuildingMarkers />
             <MapUpdater coordinates={geoData?.coordinates} />
           </Map>
 
@@ -320,6 +312,7 @@ const GeneralMapsComponent = () => {
 const MapUpdater = ({ coordinates }: { coordinates: any }) => {
   const { current: map } = useMap();
   const dispatch = useDispatch();
+  const mapCategories = useSelector((state: RootState) => state.map_many);
   const zoomToFeature = useSelector(
     (state: RootState) => state.map.zoomToFeature
   );
@@ -349,6 +342,25 @@ const MapUpdater = ({ coordinates }: { coordinates: any }) => {
       dispatch(setZoomToFeature(null)); // Clear after zooming
     }
   }, [map, zoomToFeature, dispatch]);
+
+  useEffect(() => {
+    if (!map) return;
+    Object.entries(mapCategories).forEach(([category, catState]) => {
+      if (
+        catState?.zoomToFeature &&
+        catState.zoomToFeature.geometry.type === "Polygon"
+      ) {
+        const coords = catState.zoomToFeature.geometry.coordinates[0][0];
+        map.flyTo({
+          center: coords as [number, number],
+          zoom: 18,
+          essential: true,
+        });
+        // Clear zoom after flying
+        dispatch(setCatZoom({ category, feature: null }));
+      }
+    });
+  }, [map, mapCategories, dispatch]);
 
   return null;
 };

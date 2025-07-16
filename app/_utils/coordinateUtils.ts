@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/_utils/coordinateUtils.ts
-import { Feature } from "geojson";
+import { Feature, FeatureCollection } from "geojson";
 
 export function convertProjectedToGeographic(
   x: number,
@@ -30,3 +31,29 @@ export function convertFeatureToGeographic(feature: Feature): Feature {
   // Add support for other geometry types if needed
   return feature;
 }
+
+// / Convert the fake data coordinates from projected to geographic
+export const convertFakeDataCoordinates = (
+  originalData: any
+): FeatureCollection => {
+  if (!originalData?.data?.features) {
+    return { type: "FeatureCollection", features: [] };
+  }
+
+  const convertedFeatures = originalData.data.features.map((feature: any) => ({
+    ...feature,
+    geometry: {
+      ...feature.geometry,
+      coordinates: feature.geometry.coordinates.map((ring: number[][]) =>
+        ring.map((coord: number[]) =>
+          convertProjectedToGeographic(coord[0], coord[1])
+        )
+      ),
+    },
+  }));
+
+  return {
+    type: "FeatureCollection",
+    features: convertedFeatures,
+  };
+};

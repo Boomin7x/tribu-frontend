@@ -1,3 +1,4 @@
+import { Feature } from "geojson";
 export interface IGetBuildingByCategoryParams {
   building_category: string;
   bbox: string;
@@ -45,7 +46,7 @@ export type TBuildingFeature = {
 
 export type TBuildingFeatureCollection = {
   type: "FeatureCollection";
-  features: TBuildingFeature[];
+  features: Feature[];
 };
 
 export type IBuildingApiResponse = {

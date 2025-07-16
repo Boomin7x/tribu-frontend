@@ -9,7 +9,7 @@ function isBrowser() {
 }
 
 const mapClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_MAP_BASE_URL,
+  baseURL: "/api/proxy/",
   headers: {
     "Content-Type": "application/json",
     Accept: "*/*",
