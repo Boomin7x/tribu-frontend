@@ -9,7 +9,7 @@ import { IconButton, Tooltip, Typography } from "@mui/material";
 import { FeatureCollection } from "geojson";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
-import { fakeRoads } from "../../_utils/fakeData";
+import { useGetCategoryRoads } from "../../_hooks/buildings";
 import RoadDrawerDetails from "./RoadDrawerDetails";
 
 interface IRoadCategories {
@@ -57,14 +57,19 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
     shallowEqual
   );
 
-  const newData = fakeRoads;
+  // Fetch roads for this category
+  const { data } = useGetCategoryRoads({
+    category,
+    bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
+    limit: 12,
+  });
 
-  const convertedData: FeatureCollection = useMemo(
-    () => newData,
-    [newData]
-  ) as FeatureCollection;
-
-  console.log({ newData, convertedRoadData: convertedData });
+  // Convert coordinates if needed (assume data is a FeatureCollection)
+  const convertedData: FeatureCollection = useMemo(() => {
+    if (!data) return { type: "FeatureCollection", features: [] };
+    // If you need to convert coordinates, do it here
+    return data?.data as FeatureCollection;
+  }, [data?.data]);
 
   useEffect(() => {
     dispatch(

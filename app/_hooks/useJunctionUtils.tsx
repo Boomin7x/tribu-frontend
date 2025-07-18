@@ -150,6 +150,11 @@ const useJunctionUtils = () => {
       const feature = e.features && e.features[0];
       if (feature) {
         const category = feature.layer.id.replace("junction-point-", "");
+        console.log("Junction click:", {
+          category,
+          feature,
+          layerId: feature.layer.id,
+        });
         dispatch(
           setSelectedJunctionFeature({
             category,
