@@ -11,3 +11,10 @@ export enum MAP_QUERY_KEY {
   GET_CURRENT_WEATHER_BY_COORDS = "get-current-weather-by-coords",
   GET_WEATHER_BY_ZONE_ID = "get-weather-by-zone-id",
 }
+export enum JunctionType {
+  ThreeWay = "3WAY",
+  FourWay = "4WAY",
+  Complex = "CMPLX",
+  Interchange = "ITP",
+}
+// ... existing code ...

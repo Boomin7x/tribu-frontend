@@ -1,3 +1,5 @@
+import { JunctionType } from "../enum";
+
 export interface IGetAllRoadParams {
   bbox: string;
   limit?: number;
@@ -5,8 +7,8 @@ export interface IGetAllRoadParams {
 }
 
 export interface IGetJunctionParams {
-  junction_type_code: string;
-  limit: number;
+  junction_type_code: JunctionType;
+  limit?: number;
 }
 
 export interface ICategoryroadsParams {

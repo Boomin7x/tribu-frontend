@@ -32,8 +32,6 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
   const { data } = useGetBuildingByCategory({
     bbox: bbox.params,
     building_category: category,
-    limit: 10,
-    page: 1,
   });
 
   // Memoize conversion

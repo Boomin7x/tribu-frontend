@@ -20,12 +20,16 @@ import Map, {
 import { useDispatch, useSelector } from "react-redux";
 import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
 import useBuildingUtils from "../_hooks/useBuildingUtils";
+import useRoadsUtils from "../_hooks/useRoadsUtils";
+import useJunctionUtils from "../_hooks/useJunctionUtils";
 import useDebounce from "../_hooks/useDebounce";
 import useGeocode from "../_hooks/useGeoCode";
 import useGeolocation from "../_hooks/useGeolocation";
 import { setZoomToFeature as setCatZoom } from "../store/slice/map_category.slice";
 import AppInput from "./AppInput";
 import AppLoader from "./AppLoader";
+import { setZoomToRoadFeature } from "../store/slice/map_road.slice";
+import { setZoomToJunctionFeature } from "../store/slice/map_junction.slice";
 
 const convertProjectedToGeographic = (
   x: number,
@@ -133,10 +137,33 @@ const GeneralMapsComponent = () => {
   const {
     BuildingLayers,
     BuildingPopups,
-    interactiveLayerIds,
+    interactiveLayerIds: buildingLayerIds,
     onBuildingMapClick,
     BuildingMarkers,
   } = useBuildingUtils();
+  const {
+    RoadLayers,
+    RoadPopups,
+    interactiveLayerIds: roadLayerIds,
+    onRoadMapClick,
+    RoadMarkers,
+  } = useRoadsUtils();
+  const {
+    JunctionLayers,
+    JunctionPopups,
+    interactiveLayerIds: junctionLayerIds,
+    onJunctionMapClick,
+    JunctionMarkers,
+  } = useJunctionUtils();
+
+  // Merge interactiveLayerIds
+  const allInteractiveLayerIds = [
+    "test-polygon-fill",
+    "buildings",
+    ...buildingLayerIds,
+    ...roadLayerIds,
+    ...junctionLayerIds,
+  ];
 
   // Handle click/hover
   const onMapClick = (e: any) => {
@@ -155,6 +182,8 @@ const GeneralMapsComponent = () => {
       dispatch(setSelectedFeature(null));
     }
     onBuildingMapClick(e);
+    onRoadMapClick(e);
+    onJunctionMapClick(e);
   };
   const onMapHover = (e: any) => {
     const feature = e.features && e.features[0];
@@ -234,11 +263,7 @@ const GeneralMapsComponent = () => {
             // mapStyle="mapbox://styles/betroboomin/cmcj495nl000v01s81843g8k4"
             mapStyle="mapbox://styles/mapbox/streets-v11"
             // mapStyle="mapbox://styles/mapbox/satellite-v9"
-            interactiveLayerIds={[
-              "test-polygon-fill",
-              "buildings",
-              ...interactiveLayerIds,
-            ]}
+            interactiveLayerIds={allInteractiveLayerIds}
             onClick={onMapClick}
             onMouseMove={onMapHover}
           >
@@ -268,6 +293,8 @@ const GeneralMapsComponent = () => {
                   <Layer {...outlineLayer} beforeId="waterway-label" />
                 </Source> */}
                 <BuildingLayers />
+                <RoadLayers />
+                <JunctionLayers />
               </>
             )}
             {selectedFeature && selectedFeature.geometry.type === "Polygon" && (
@@ -296,7 +323,11 @@ const GeneralMapsComponent = () => {
               </Popup>
             )}
             <BuildingPopups />
+            <RoadPopups />
+            <JunctionPopups />
             <BuildingMarkers />
+            <RoadMarkers />
+            <JunctionMarkers />
             <MapUpdater coordinates={geoData?.coordinates} />
           </Map>
 
@@ -361,6 +392,51 @@ const MapUpdater = ({ coordinates }: { coordinates: any }) => {
       }
     });
   }, [map, mapCategories, dispatch]);
+
+  const mapRoads = useSelector((state: RootState) => state.map_road);
+
+  useEffect(() => {
+    if (!map) return;
+    Object.entries(mapRoads).forEach(([category, catState]) => {
+      if (
+        catState?.zoomToFeature &&
+        catState.zoomToFeature.geometry.type === "LineString"
+      ) {
+        // Get the midpoint of the line
+        const coords =
+          catState.zoomToFeature.geometry.coordinates[
+            Math.floor(catState.zoomToFeature.geometry.coordinates.length / 2)
+          ];
+        map.flyTo({
+          center: coords as [number, number],
+          zoom: 18,
+          essential: true,
+        });
+        // Clear zoom after flying
+        dispatch(setZoomToRoadFeature({ category, feature: null }));
+      }
+    });
+  }, [map, mapRoads, dispatch]);
+  const mapJunctions = useSelector((state: RootState) => state.map_junction);
+
+  useEffect(() => {
+    if (!map) return;
+    Object.entries(mapJunctions).forEach(([category, catState]) => {
+      if (
+        catState?.zoomToFeature &&
+        catState.zoomToFeature.geometry.type === "Point"
+      ) {
+        const coords = catState.zoomToFeature.geometry.coordinates;
+        map.flyTo({
+          center: coords as [number, number],
+          zoom: 18,
+          essential: true,
+        });
+        // Clear zoom after flying
+        dispatch(setZoomToJunctionFeature({ category, feature: null }));
+      }
+    });
+  }, [map, mapJunctions, dispatch]);
 
   return null;
 };

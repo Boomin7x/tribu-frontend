@@ -1,6 +1,7 @@
 // import BuildingLayers from './layers/building_layers';
 
 import { BuildingLayers } from "./sideLayers/BuildingLayers";
+import JunctionLayer from "./sideLayers/JunctionLayer";
 import { RoadLayers } from "./sideLayers/roadLayers";
 
 export const LILayerSidebarContent = () => {
@@ -71,6 +72,7 @@ export const LILayerSidebarContent = () => {
     <>
       <BuildingLayers />
       <RoadLayers />
+      <JunctionLayer />
     </>
   );
 };

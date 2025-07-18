@@ -7,4 +7,5 @@ export const AppConfig = {
 
 export const bbox = {
   params: "9.65903,4.08024,9.66270,4.08096",
+  cameroon: "8.2,1.4,16.6,13.5",
 };
