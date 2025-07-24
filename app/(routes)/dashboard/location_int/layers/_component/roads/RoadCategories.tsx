@@ -62,7 +62,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
   const { data } = useGetCategoryRoads({
     category,
     bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
-    limit: 12,
+    // limit: 12,
   });
 
   // Convert coordinates if needed (assume data is a FeatureCollection)
