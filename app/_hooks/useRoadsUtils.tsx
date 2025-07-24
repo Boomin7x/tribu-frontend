@@ -6,6 +6,35 @@ import { Layer, Popup, Source } from "react-map-gl/mapbox";
 import { setSelectedRoadFeature } from "../store/slice/map_road.slice";
 import { Marker } from "react-map-gl/mapbox";
 
+// Road category to color mapping
+export const ROAD_CATEGORY_COLORS: Record<string, string> = {
+  bridleway: "#8B4513",
+  construction: "#A9A9A9",
+  cycleway: "#1E90FF",
+  escape: "#FFD700",
+  footway: "#32CD32",
+  living_street: "#FF69B4",
+  motorway: "#FF0000",
+  motorway_link: "#FF6347",
+  passing_place: "#BDB76B",
+  path: "#8FBC8F",
+  pedestrian: "#00CED1",
+  primary: "#FFA500",
+  primary_link: "#FFB347",
+  proposed: "#D3D3D3",
+  residential: "#4682B4",
+  secondary: "#FFFF00",
+  secondary_link: "#FFFF99",
+  service: "#C0C0C0",
+  steps: "#A0522D",
+  tertiary: "#ADFF2F",
+  tertiary_link: "#BFFF00",
+  track: "#DEB887",
+  trunk: "#228B22",
+  trunk_link: "#7CFC00",
+  unclassified: "#D2691E",
+};
+
 // Memoized LayerSource for roads
 const RoadLayerSource: React.FC<{ category: string; catState: any }> =
   React.memo(function RoadLayerSource({ catState, category }) {
@@ -16,20 +45,35 @@ const RoadLayerSource: React.FC<{ category: string; catState: any }> =
       }),
       [catState.features]
     );
+    // Pick color for this category, fallback to red
+    const lineColor = ROAD_CATEGORY_COLORS[category] || "#e33116";
     return (
       <Source id={`road-source-${category}`} type="geojson" data={geojsonData}>
         <Layer
           id={`road-line-${category}`}
           type="line"
           paint={{
-            "line-color": "#e33116",
-            "line-width": 3,
+            "line-color": lineColor,
+            "line-width": 8,
+            // Temporarily use solid line for debugging
+            // "line-dasharray": [2, 4],
           }}
         />
       </Source>
     );
   });
 RoadLayerSource.displayName = "RoadLayerSource";
+
+// Utility to ensure only serializable features are stored in Redux
+function toPlainFeature(feature: any) {
+  if (feature && typeof feature.toGeoJSON === "function") {
+    return feature.toGeoJSON();
+  }
+  if (feature && typeof feature.toJSON === "function") {
+    return feature.toJSON();
+  }
+  return feature;
+}
 
 const useRoadsUtils = () => {
   const mapRoads = useSelector(
@@ -126,10 +170,12 @@ const useRoadsUtils = () => {
     (e: any) => {
       const feature = e.features && e.features[0];
       if (feature) {
+        console.log("Road click:", feature, feature.layer?.id);
         const category = feature.layer.id.replace("road-line-", "");
-        dispatch(
-          setSelectedRoadFeature({ category, feature: feature.toGeoJSON() })
-        );
+        const plainFeature = toPlainFeature(feature);
+        dispatch(setSelectedRoadFeature({ category, feature: plainFeature }));
+      } else {
+        console.log("Road click: no feature");
       }
     },
     [dispatch]
@@ -145,7 +191,6 @@ const useRoadsUtils = () => {
             catState.features &&
             catState.features.length > 0
           ) {
-            console.log({ newCategoryStateData: catState });
             return catState.features.map((feature, idx) => {
               let lng = 0,
                 lat = 0;
@@ -167,6 +212,8 @@ const useRoadsUtils = () => {
               } else {
                 return null;
               }
+              // Pick color for this category, fallback to red
+              const markerColor = ROAD_CATEGORY_COLORS[category] || "#e33116";
               return (
                 <Marker
                   key={`${category}-road-marker-${feature.id ?? idx}`}
@@ -185,7 +232,7 @@ const useRoadsUtils = () => {
                     <span
                       style={{
                         background: "white",
-                        color: "#e33116",
+                        color: markerColor,
                         fontSize: 12,
                         padding: "2px 6px",
                         borderRadius: 4,
@@ -206,7 +253,7 @@ const useRoadsUtils = () => {
                           height: 0,
                           borderLeft: "6px solid transparent",
                           borderRight: "6px solid transparent",
-                          borderTop: "6px solid #e33116",
+                          borderTop: `6px solid ${markerColor}`,
                           zIndex: 1,
                         }}
                       />

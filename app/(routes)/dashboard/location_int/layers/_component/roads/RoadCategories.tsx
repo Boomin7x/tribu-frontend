@@ -11,6 +11,7 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useGetCategoryRoads } from "../../_hooks/buildings";
 import RoadDrawerDetails from "./RoadDrawerDetails";
+import { ROAD_CATEGORY_COLORS } from "@/app/_hooks/useRoadsUtils";
 
 interface IRoadCategories {
   category: string;
@@ -91,9 +92,15 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
 
   return (
     <div className="flex items-center justify-between p-2 border-b last:border-0">
-      <Typography className="capitalize">
-        {category?.replace(/_/g, " ")}
-      </Typography>
+      <div className="flex items-center gap-2">
+        <div
+          className="w-2 h-2 rounded-full"
+          style={{ backgroundColor: ROAD_CATEGORY_COLORS[category] }}
+        />
+        <Typography className="capitalize">
+          {category?.replace(/_/g, " ")}
+        </Typography>
+      </div>
       <div className="flex items-center gap-3">
         <Tooltip title="More details" arrow>
           <IconButton

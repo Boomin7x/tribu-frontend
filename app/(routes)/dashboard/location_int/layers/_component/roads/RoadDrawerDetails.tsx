@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { Feature, FeatureCollection } from "geojson";
+import { ROAD_CATEGORY_COLORS } from "@/app/_hooks/useRoadsUtils";
 
 // RoadDrawerDetails component
 interface IRoadDrawerDetails {
@@ -223,7 +224,17 @@ const RoadDrawerDetails: FC<IRoadDrawerDetails> = ({
                         label={index + 1}
                         color="primary"
                         size="small"
-                        className="w-6 h-6"
+                        className="w-fit h-6"
+                        sx={{
+                          color: "white",
+                          border: `1px solid ${
+                            ROAD_CATEGORY_COLORS[feature.properties?.highway] ||
+                            "#ccc"
+                          }`,
+                          backgroundColor:
+                            ROAD_CATEGORY_COLORS[feature.properties?.highway] ||
+                            undefined,
+                        }}
                       />
                     </ListItemIcon>
                     <ListItemText
@@ -239,8 +250,14 @@ const RoadDrawerDetails: FC<IRoadDrawerDetails> = ({
                           <Chip
                             label={feature.properties?.highway}
                             size="small"
-                            color="info"
                             className="ml-2 capitalize"
+                            sx={{
+                              backgroundColor:
+                                ROAD_CATEGORY_COLORS[
+                                  feature.properties?.highway
+                                ] || undefined,
+                              color: "#fff",
+                            }}
                           />
                         </Box>
                       }
@@ -335,7 +352,6 @@ const RoadDrawerDetails: FC<IRoadDrawerDetails> = ({
                         </Box>
                         <Button
                           variant="contained"
-                          color="primary"
                           size="small"
                           onClick={() => {
                             if (onZoomToFeature) {
@@ -344,6 +360,19 @@ const RoadDrawerDetails: FC<IRoadDrawerDetails> = ({
                             }
                           }}
                           className="mt-2"
+                          sx={{
+                            backgroundColor:
+                              ROAD_CATEGORY_COLORS[
+                                feature.properties?.highway
+                              ] || undefined,
+                            color: "#fff",
+                            "&:hover": {
+                              backgroundColor:
+                                ROAD_CATEGORY_COLORS[
+                                  feature.properties?.highway
+                                ] || undefined,
+                            },
+                          }}
                         >
                           Zoom to on Map
                         </Button>

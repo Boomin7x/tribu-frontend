@@ -165,18 +165,25 @@ const GeneralMapsComponent = () => {
     ...junctionLayerIds,
   ];
 
+  console.log("interactiveLayerIds:", allInteractiveLayerIds);
+
+  // Utility to ensure only serializable features are stored in Redux
+  function toPlainFeature(feature: any) {
+    if (feature && typeof feature.toGeoJSON === "function") {
+      return feature.toGeoJSON();
+    }
+    if (feature && typeof feature.toJSON === "function") {
+      return feature.toJSON();
+    }
+    return feature;
+  }
+
   // Handle click/hover
   const onMapClick = (e: any) => {
+    console.log("Map click event:", e);
     const feature = e.features && e.features[0];
     if (feature) {
-      const plainFeature = feature.toGeoJSON
-        ? feature.toGeoJSON()
-        : {
-            type: feature.type,
-            id: feature.id,
-            properties: feature.properties,
-            geometry: feature.geometry,
-          };
+      const plainFeature = toPlainFeature(feature);
       dispatch(setSelectedFeature(plainFeature));
     } else {
       dispatch(setSelectedFeature(null));

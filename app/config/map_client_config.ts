@@ -43,7 +43,6 @@ mapClient.interceptors.request.use(
 mapClient.interceptors.response.use(
   (response) => {
     // You can modify the response data here
-    console.log("Response received:", response);
     return response;
   },
   (error) => {

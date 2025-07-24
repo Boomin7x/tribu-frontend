@@ -58,8 +58,6 @@ const useJunctionUtils = () => {
   );
   const dispatch = useDispatch();
 
-  console.log("available Junctions", mapJunctions);
-
   // Memoize interactiveLayerIds
   const interactiveLayerIds = useMemo(
     () =>
