@@ -79,7 +79,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
         features: convertedData?.features ?? null,
       })
     );
-    dispatch(setToggleRoadView({ category, isOpen: true }));
+    dispatch(setToggleRoadView({ category, isOpen: false }));
   }, [category, convertedData, dispatch]);
 
   const handleToggleView = useCallback(() => {
