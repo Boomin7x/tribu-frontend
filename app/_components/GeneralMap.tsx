@@ -142,11 +142,10 @@ const GeneralMapsComponent = () => {
     BuildingMarkers,
   } = useBuildingUtils();
   const {
-    RoadLayers,
     RoadPopups,
     interactiveLayerIds: roadLayerIds,
     onRoadMapClick,
-    RoadMarkers,
+    RoadLayers,
   } = useRoadsUtils();
   const {
     JunctionLayers,
@@ -262,13 +261,15 @@ const GeneralMapsComponent = () => {
               longitude: geoData?.coordinates.longitude || 9.66,
               latitude: geoData?.coordinates.latitude || 4.08,
               zoom: 16,
+              pitch: 50,
             }}
             style={{
               position: "absolute",
               inset: 0,
             }}
-            // mapStyle="mapbox://styles/betroboomin/cmcj495nl000v01s81843g8k4"
-            mapStyle="mapbox://styles/mapbox/streets-v11"
+            mapStyle="mapbox://styles/betroboomin/cmcj495nl000v01s81843g8k4"
+            // mapStyle="mapbox://styles/mapbox/streets-v11"
+            // mapStyle="mapbox://styles/betroboomin/cmdknj5ur006o01s85yadf7mo"
             // mapStyle="mapbox://styles/mapbox/satellite-v9"
             interactiveLayerIds={allInteractiveLayerIds}
             onClick={onMapClick}
@@ -333,7 +334,7 @@ const GeneralMapsComponent = () => {
             <RoadPopups />
             <JunctionPopups />
             <BuildingMarkers />
-            <RoadMarkers />
+            {/* <RoadMarkers /> */}
             <JunctionMarkers />
             <MapUpdater coordinates={geoData?.coordinates} />
           </Map>

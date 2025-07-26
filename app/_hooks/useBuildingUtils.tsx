@@ -22,12 +22,26 @@ const LayerSource: FC<{ category: string; catState: MapCategoryState }> =
 
     return (
       <Source id={`source-${category}`} type="geojson" data={geojsonData}>
+        {/* Hide Mapbox's built-in buildings */}
+        {/* <Layer
+          id={`hide-buildings-${category}`}
+          type="fill"
+          source="composite"
+          source-layer="building"
+          paint={{
+            "fill-color": "transparent",
+            "fill-opacity": 0,
+          }}
+        /> */}
         <Layer
           id={`fill-${category}`}
-          type="fill"
+          type="fill-extrusion"
           paint={{
-            "fill-color": "blue",
-            "fill-opacity": 0.6,
+            "fill-extrusion-height": 30,
+            "fill-extrusion-color": "#8B5CF6", // Purple color
+            // "fill-extrusion-opacity": 0.85,
+            "fill-extrusion-opacity": 1,
+            "fill-extrusion-base": 0,
           }}
         />
         {/* <Layer
@@ -48,14 +62,14 @@ const LayerSource: FC<{ category: string; catState: MapCategoryState }> =
             "text-halo-width": 1,
           }}
         /> */}
-        <Layer
+        {/* <Layer
           id={`outline-${category}`}
           type="line"
           paint={{
             "line-color": "#333",
             "line-width": 2,
           }}
-        />
+        /> */}
       </Source>
     );
   });
