@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { useDispatch } from "react-redux";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
@@ -18,6 +18,7 @@ export const useLayerURLState = ({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const dispatch = useDispatch();
+  const isUpdatingRef = useRef(false);
 
   // Get all active layers from URL
   const getActiveLayers = useCallback(() => {
@@ -27,24 +28,45 @@ export const useLayerURLState = ({
 
   // Initialize Redux state from URL on mount
   useEffect(() => {
-    const activeLayers = getActiveLayers();
-    if (activeLayers.length > 0) {
-      dispatch(initializeAction({ categories: activeLayers }));
+    if (!isUpdatingRef.current) {
+      const activeLayers = getActiveLayers();
+      if (activeLayers.length > 0) {
+        dispatch(initializeAction({ categories: activeLayers }));
+      }
     }
   }, [dispatch, getActiveLayers, initializeAction]);
 
-  // Update URL with new layers
+  // Update URL with new layers - prevent page reload
   const updateLayersInURL = useCallback(
     (layers: string[]) => {
-      const newSearchParams = new URLSearchParams(searchParams);
+      if (isUpdatingRef.current) return;
 
+      isUpdatingRef.current = true;
+
+      // Create a new URLSearchParams object to avoid mutating the original
+      const newSearchParams = new URLSearchParams();
+
+      // Copy all existing search params except the one we're updating
+      searchParams.forEach((value, key) => {
+        if (key !== paramName) {
+          newSearchParams.set(key, value);
+        }
+      });
+
+      // Add our layer param if there are layers
       if (layers.length > 0) {
         newSearchParams.set(paramName, layers.join(","));
-      } else {
-        newSearchParams.delete(paramName);
       }
 
-      router.replace(`${pathname}?${newSearchParams.toString()}`);
+      const newURL = `${pathname}?${newSearchParams.toString()}`;
+
+      // Use replace with scroll: false to prevent page reload and scroll to top
+      router.replace(newURL, { scroll: false });
+
+      // Reset the flag after a short delay to prevent race conditions
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 100);
     },
     [searchParams, router, pathname, paramName]
   );
@@ -72,7 +94,13 @@ export const useLayerURLState = ({
         newLayers = [...currentLayers, category];
       }
 
-      updateLayersInURL(newLayers);
+      // Only update URL if the state actually changed
+      const currentLayersStr = currentLayers.sort().join(",");
+      const newLayersStr = newLayers.sort().join(",");
+
+      if (currentLayersStr !== newLayersStr) {
+        updateLayersInURL(newLayers);
+      }
     },
     [getActiveLayers, isLayerActive, updateLayersInURL]
   );

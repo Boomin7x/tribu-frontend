@@ -76,25 +76,36 @@ function toPlainFeature(feature: any) {
 }
 
 const useRoadsUtils = () => {
+  // More specific selectors to prevent unnecessary re-renders
   const mapRoads = useSelector(
     (state: RootState) => state.map_road,
     shallowEqual
   );
+
+  // Separate selector for just the toggle states to prevent re-renders when features change
+  const roadToggleStates = useSelector((state: RootState) => {
+    const toggles: Record<string, boolean> = {};
+    Object.entries(state.map_road).forEach(([category, catState]) => {
+      toggles[category] = catState?.toggleRoadView || false;
+    });
+    return toggles;
+  }, shallowEqual);
+
   const dispatch = useDispatch();
 
-  // Memoize interactiveLayerIds
+  // Memoize interactiveLayerIds - only update when categories change, not their states
   const interactiveLayerIds = useMemo(
     () => Object.keys(mapRoads).map((category) => `road-line-${category}`),
     [mapRoads]
   );
 
-  // Memoize RoadLayers
+  // Memoize RoadLayers with better dependency tracking
   const RoadLayers = useMemo(() => {
-    const Component = () => (
+    const Component = React.memo(() => (
       <>
         {Object.entries(mapRoads).map(([category, catState]) =>
-          catState?.toggleRoadView &&
-          catState.features &&
+          roadToggleStates[category] &&
+          catState?.features &&
           catState.features.length > 0 ? (
             <RoadLayerSource
               catState={catState}
@@ -104,14 +115,14 @@ const useRoadsUtils = () => {
           ) : null
         )}
       </>
-    );
+    ));
     Component.displayName = "RoadLayers";
     return Component;
-  }, [mapRoads]);
+  }, [mapRoads, roadToggleStates]);
 
-  // RoadPopups
+  // RoadPopups with better memoization
   const RoadPopups = useMemo(() => {
-    const RoadPopupsComponent: React.FC = () => (
+    const RoadPopupsComponent = React.memo(() => (
       <>
         {Object.entries(mapRoads).map(([category, catState]) => {
           if (
@@ -160,7 +171,7 @@ const useRoadsUtils = () => {
           return null;
         })}
       </>
-    );
+    ));
     RoadPopupsComponent.displayName = "RoadPopups";
     return RoadPopupsComponent;
   }, [mapRoads, dispatch]);

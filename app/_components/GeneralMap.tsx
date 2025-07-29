@@ -9,7 +9,7 @@ import {
 import type { RootState } from "@/app/store/store";
 import { Icon } from "@iconify/react";
 import { FeatureCollection } from "geojson";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { LayerProps } from "react-map-gl/mapbox";
 import Map, {
   MapProvider,
@@ -80,7 +80,7 @@ console.log(
   (fakeData.features?.[0]?.geometry as any)?.coordinates?.[0]?.[0]
 );
 
-const GeneralMapsComponent = () => {
+const GeneralMapsComponent = React.memo(() => {
   const dispatch = useDispatch();
   const features = useSelector((state: RootState) => state.map.features);
   const selectedFeature = useSelector(
@@ -154,6 +154,41 @@ const GeneralMapsComponent = () => {
     onJunctionMapClick,
     JunctionMarkers,
   } = useJunctionUtils();
+
+  // Memoize the map layers to prevent re-renders
+  const memoizedLayers = useMemo(
+    () => (
+      <>
+        <BuildingLayers />
+        <RoadLayers />
+        <JunctionLayers />
+      </>
+    ),
+    [BuildingLayers, RoadLayers, JunctionLayers]
+  );
+
+  // Memoize the popups to prevent re-renders
+  const memoizedPopups = useMemo(
+    () => (
+      <>
+        <BuildingPopups />
+        <RoadPopups />
+        <JunctionPopups />
+      </>
+    ),
+    [BuildingPopups, RoadPopups, JunctionPopups]
+  );
+
+  // Memoize the markers to prevent re-renders
+  const memoizedMarkers = useMemo(
+    () => (
+      <>
+        <BuildingMarkers />
+        <JunctionMarkers />
+      </>
+    ),
+    [BuildingMarkers, JunctionMarkers]
+  );
 
   // Merge interactiveLayerIds
   const allInteractiveLayerIds = [
@@ -300,9 +335,7 @@ const GeneralMapsComponent = () => {
                   <Layer {...polygonLayer} beforeId="waterway-label" />
                   <Layer {...outlineLayer} beforeId="waterway-label" />
                 </Source> */}
-                <BuildingLayers />
-                <RoadLayers />
-                <JunctionLayers />
+                {memoizedLayers}
               </>
             )}
             {selectedFeature && selectedFeature.geometry.type === "Polygon" && (
@@ -330,12 +363,8 @@ const GeneralMapsComponent = () => {
                 </div>
               </Popup>
             )}
-            <BuildingPopups />
-            <RoadPopups />
-            <JunctionPopups />
-            <BuildingMarkers />
-            {/* <RoadMarkers /> */}
-            <JunctionMarkers />
+            {memoizedPopups}
+            {memoizedMarkers}
             <MapUpdater coordinates={geoData?.coordinates} />
           </Map>
 
@@ -346,9 +375,11 @@ const GeneralMapsComponent = () => {
       </MapProvider>
     </div>
   );
-};
+});
 
-const MapUpdater = ({ coordinates }: { coordinates: any }) => {
+GeneralMapsComponent.displayName = "GeneralMapsComponent";
+
+const MapUpdater = React.memo(({ coordinates }: { coordinates: any }) => {
   const { current: map } = useMap();
   const dispatch = useDispatch();
   const mapCategories = useSelector((state: RootState) => state.map_many);
@@ -425,6 +456,7 @@ const MapUpdater = ({ coordinates }: { coordinates: any }) => {
       }
     });
   }, [map, mapRoads, dispatch]);
+
   const mapJunctions = useSelector((state: RootState) => state.map_junction);
 
   useEffect(() => {
@@ -447,6 +479,8 @@ const MapUpdater = ({ coordinates }: { coordinates: any }) => {
   }, [map, mapJunctions, dispatch]);
 
   return null;
-};
+});
 
-export const GeneralMaps = React.memo(GeneralMapsComponent);
+MapUpdater.displayName = "MapUpdater";
+
+export const GeneralMaps = GeneralMapsComponent;
