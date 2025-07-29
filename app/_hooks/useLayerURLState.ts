@@ -44,7 +44,7 @@ export const useLayerURLState = ({
         newSearchParams.delete(paramName);
       }
 
-      router.push(`${pathname}?${newSearchParams.toString()}`);
+      router.replace(`${pathname}?${newSearchParams.toString()}`);
     },
     [searchParams, router, pathname, paramName]
   );
