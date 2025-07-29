@@ -12,42 +12,23 @@ import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useGetCategoryRoads } from "../../_hooks/buildings";
 import RoadDrawerDetails from "./RoadDrawerDetails";
 import { ROAD_CATEGORY_COLORS } from "@/app/_hooks/useRoadsUtils";
+import { cn } from "@/app/lib/tailwindLib";
 
 interface IRoadCategories {
   category: string;
 }
 
-// Converts projected coordinates to geographic [lng, lat]
-// const convertCoordinates = (data: FeatureCollection): FeatureCollection => {
-//   if (!data?.features) return { type: "FeatureCollection", features: [] };
-//   const convertProjectedToGeographic = (
-//     x: number,
-//     y: number
-//   ): [number, number] => {
-//     const longitude = (x / 20037508.34) * 180;
-//     const latitude =
-//       (Math.atan(Math.exp((y * Math.PI) / 20037508.34)) * 2 - Math.PI / 2) *
-//       (180 / Math.PI);
-//     return [longitude, latitude];
-//   };
-//   const convertedFeatures = data.features.map((feature: Feature) => {
-//     if (feature.geometry.type === "LineString") {
-//       return {
-//         ...feature,
-//         geometry: {
-//           ...feature.geometry,
-//           coordinates: (feature.geometry.coordinates as number[][]).map(
-//             (coord: number[]) =>
-//               convertProjectedToGeographic(coord[0], coord[1])
-//           ),
-//         },
-//       };
-//     }
-//     // If not a LineString, return as is
-//     return feature;
-//   });
-//   return { type: "FeatureCollection", features: convertedFeatures };
-// };
+const isColorLight = (hexColor: string): boolean => {
+  const hex = hexColor.replace("#", "");
+
+  const r = parseInt(hex.substr(0, 2), 16);
+  const g = parseInt(hex.substr(2, 2), 16);
+  const b = parseInt(hex.substr(4, 2), 16);
+
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+  return luminance > 0.5;
+};
 
 const RoadCategories: FC<IRoadCategories> = ({ category }) => {
   const dispatch = useDispatch();
@@ -59,16 +40,16 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
   );
 
   // Fetch roads for this category
-  const { data } = useGetCategoryRoads({
-    category,
-    bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
-    // limit: 12,
-  });
+  const { data } = useGetCategoryRoads(
+    {
+      category,
+      bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
+    },
+    isView
+  );
 
-  // Convert coordinates if needed (assume data is a FeatureCollection)
   const convertedData: FeatureCollection = useMemo(() => {
     if (!data) return { type: "FeatureCollection", features: [] };
-    // If you need to convert coordinates, do it here
     return data?.data as FeatureCollection;
   }, [data?.data]);
 
@@ -90,8 +71,24 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
     setIsDetailsOpen((prev) => !prev);
   }, []);
 
+  // Determine text color based on background color brightness
+  const textColor = useMemo(() => {
+    if (!isView) return undefined;
+    const backgroundColor = ROAD_CATEGORY_COLORS[category];
+    return isColorLight(backgroundColor) ? "black" : "white";
+  }, [isView, category]);
+
   return (
-    <div className="flex items-center justify-between p-2 border-b last:border-0">
+    <div
+      style={{
+        backgroundColor: isView ? ROAD_CATEGORY_COLORS[category] : undefined,
+        color: textColor,
+      }}
+      className={cn(
+        "flex items-center justify-between p-2 border-b last:border-0",
+        isView && ""
+      )}
+    >
       <div className="flex items-center gap-2">
         <div
           className="w-2 h-2 rounded-full"
