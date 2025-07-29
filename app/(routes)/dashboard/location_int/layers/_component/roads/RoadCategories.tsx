@@ -1,4 +1,8 @@
+import { useLayerURLState } from "@/app/_hooks/useLayerURLState";
+import { ROAD_CATEGORY_COLORS } from "@/app/_hooks/useRoadsUtils";
+import { cn } from "@/app/lib/tailwindLib";
 import {
+  initializeRoadStatesFromURL,
   setRoadFeatures,
   setToggleRoadView,
   setZoomToRoadFeature,
@@ -11,8 +15,6 @@ import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { useGetCategoryRoads } from "../../_hooks/buildings";
 import RoadDrawerDetails from "./RoadDrawerDetails";
-import { ROAD_CATEGORY_COLORS } from "@/app/_hooks/useRoadsUtils";
-import { cn } from "@/app/lib/tailwindLib";
 
 interface IRoadCategories {
   category: string;
@@ -34,18 +36,37 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
   const dispatch = useDispatch();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
+  // Use the reusable hook for URL state management
+  const { isLayerActive, toggleLayer } = useLayerURLState({
+    paramName: "roadLayers",
+    initializeAction: initializeRoadStatesFromURL,
+  });
+
+  // Get the current state from URL query params
+  const isViewFromURL = useMemo(() => {
+    return isLayerActive(category);
+  }, [isLayerActive, category]);
+
+  // Sync URL state with Redux state
   const isView = useSelector(
     (state: RootState) => state.map_road[category]?.toggleRoadView,
     shallowEqual
   );
 
+  // Update Redux state when URL changes
+  useEffect(() => {
+    if (isViewFromURL !== isView) {
+      dispatch(setToggleRoadView({ category, isOpen: isViewFromURL }));
+    }
+  }, [isViewFromURL, isView, category, dispatch]);
+
   // Fetch roads for this category
-  const { data } = useGetCategoryRoads(
+  const { data, isLoading, isFetching } = useGetCategoryRoads(
     {
       category,
       bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
     },
-    isView
+    isViewFromURL
   );
 
   const convertedData: FeatureCollection = useMemo(() => {
@@ -60,12 +81,11 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
         features: convertedData?.features ?? null,
       })
     );
-    dispatch(setToggleRoadView({ category, isOpen: false }));
   }, [category, convertedData, dispatch]);
 
   const handleToggleView = useCallback(() => {
-    dispatch(setToggleRoadView({ category, isOpen: !isView }));
-  }, [dispatch, category, isView]);
+    toggleLayer(category);
+  }, [toggleLayer, category]);
 
   const handleIsDetailsOpen = useCallback(() => {
     setIsDetailsOpen((prev) => !prev);
@@ -73,20 +93,22 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
 
   // Determine text color based on background color brightness
   const textColor = useMemo(() => {
-    if (!isView) return undefined;
+    if (!isViewFromURL) return undefined;
     const backgroundColor = ROAD_CATEGORY_COLORS[category];
     return isColorLight(backgroundColor) ? "black" : "white";
-  }, [isView, category]);
+  }, [isViewFromURL, category]);
 
   return (
     <div
       style={{
-        backgroundColor: isView ? ROAD_CATEGORY_COLORS[category] : undefined,
+        backgroundColor: isViewFromURL
+          ? ROAD_CATEGORY_COLORS[category]
+          : undefined,
         color: textColor,
       }}
       className={cn(
         "flex items-center justify-between p-2 border-b last:border-0",
-        isView && ""
+        isViewFromURL && ""
       )}
     >
       <div className="flex items-center gap-2">
@@ -102,7 +124,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
         <Tooltip title="More details" arrow>
           <IconButton
             aria-label="Button"
-            disabled={!isView}
+            disabled={!isViewFromURL}
             onClick={handleIsDetailsOpen}
           >
             <Icon icon={"pixelarticons:open"} className="size-4" />
@@ -111,7 +133,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
         <Tooltip title="Toggle visibility" arrow>
           <IconButton onClick={handleToggleView}>
             <Icon
-              icon={isView ? "mdi:eye-outline" : "mdi:eye-off-outline"}
+              icon={isViewFromURL ? "mdi:eye-outline" : "mdi:eye-off-outline"}
               className="size-4"
             />
           </IconButton>
@@ -119,6 +141,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
       </div>
       {isDetailsOpen ? (
         <RoadDrawerDetails
+          isLoading={isLoading ?? isFetching}
           open={isDetailsOpen}
           onClose={handleIsDetailsOpen}
           data={convertedData}

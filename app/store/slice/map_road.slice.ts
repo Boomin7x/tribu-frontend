@@ -14,7 +14,7 @@ const createInitialRoadState = (): MapRoadState => ({
   selectedFeature: null,
   hoveredFeature: null,
   zoomToFeature: null,
-  toggleRoadView: true,
+  toggleRoadView: false, // Changed default to false
 });
 
 const initialMapRoadState: Record<string, MapRoadState | undefined> = {};
@@ -77,6 +77,20 @@ export const mapRoadSlice = createSlice({
       }
       state[category].toggleRoadView = isOpen;
     },
+
+    // New action to initialize road states from URL parameters
+    initializeRoadStatesFromURL(
+      state,
+      action: PayloadAction<{ categories: string[] }>
+    ) {
+      const { categories } = action.payload;
+      categories.forEach((category) => {
+        if (!state[category]) {
+          state[category] = createInitialRoadState();
+        }
+        state[category].toggleRoadView = true;
+      });
+    },
   },
 });
 
@@ -86,4 +100,5 @@ export const {
   setHoveredRoadFeature,
   setZoomToRoadFeature,
   setToggleRoadView,
+  initializeRoadStatesFromURL,
 } = mapRoadSlice.actions;
