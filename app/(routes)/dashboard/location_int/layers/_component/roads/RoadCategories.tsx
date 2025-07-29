@@ -65,6 +65,7 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
     {
       category,
       bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
+      limit: 50,
     },
     isViewFromURL
   );
