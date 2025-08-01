@@ -21,12 +21,14 @@ import {
 } from "@mui/material";
 import { Icon } from "@iconify/react";
 import { Feature, FeatureCollection } from "geojson";
+import RoadDrawerDetailsSkeleton from "../roads/roadDrawerDetailsSkeleton";
 
 interface IJunctionDrawerDetails {
   open: boolean;
   onClose: () => void;
   data: FeatureCollection;
   onZoomToFeature?: (feature: Feature) => void;
+  isLoading?: boolean;
 }
 
 const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
@@ -34,11 +36,25 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
   onClose,
   data,
   onZoomToFeature,
+  isLoading,
 }) => {
   const theme = useTheme();
   const [expandedFeatures, setExpandedFeatures] = useState<Set<number>>(
     new Set()
   );
+
+  if (isLoading) {
+    return (
+      <Drawer
+        anchor="right"
+        title="Junction Data Viewer"
+        open={open}
+        onClose={onClose}
+      >
+        <RoadDrawerDetailsSkeleton />
+      </Drawer>
+    );
+  }
 
   // Toggle feature expansion
   const toggleFeature = (featureId: number) => {
@@ -80,14 +96,17 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                 icon="mdi:vector-point"
                 className="text-orange-500 w-6 h-6"
               />
-              <Typography variant="h5" className="font-bold">
-                Junctions
+              <Typography
+                variant="h5"
+                className="font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent"
+              >
+                Junctions Data Viewer
               </Typography>
             </Box>
             <Tooltip title="Close drawer">
               <IconButton
                 onClick={onClose}
-                className="hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="hover:bg-orange-50 dark:hover:bg-orange-900/20"
               >
                 <Icon icon="mdi:close" className="w-6 h-6" />
               </IconButton>
@@ -108,16 +127,22 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
               {data.features.map((feature, index) => (
                 <Card
                   key={feature.id}
-                  className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 dark:border-gray-700"
+                  className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600"
                 >
                   <ListItemButton
                     onClick={() => toggleFeature(feature.id as number)}
-                    className="p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    className="p-4 hover:bg-orange-50 dark:hover:bg-orange-900/20"
                   >
                     <ListItemIcon>
                       <Chip
                         label={index + 1}
-                        color="primary"
+                        sx={{
+                          backgroundColor: "#f59e42",
+                          color: "white",
+                          "&:hover": {
+                            backgroundColor: "#d97706",
+                          },
+                        }}
                         size="small"
                         className="w-6 h-6"
                       />
@@ -136,7 +161,10 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                           <Chip
                             label={feature.properties?.junction_type_code}
                             size="small"
-                            color="info"
+                            sx={{
+                              backgroundColor: "#f59e42",
+                              color: "white",
+                            }}
                             className="ml-2 capitalize"
                           />
                         </Box>
@@ -163,7 +191,7 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                     timeout="auto"
                   >
                     <Divider />
-                    <CardContent className="bg-gray-50 dark:bg-gray-800/30">
+                    <CardContent className="bg-orange-50 dark:bg-orange-900/10">
                       <Stack spacing={2}>
                         {/* Properties */}
                         <Box>
@@ -173,7 +201,7 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                           >
                             <Icon
                               icon="mdi:information"
-                              className="w-4 h-4 mr-1"
+                              className="w-4 h-4 mr-1 text-orange-500"
                             />
                             Properties
                           </Typography>
@@ -184,7 +212,7 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                                   key={key}
                                   className="flex w-full border-x justify-between border-b first:border-t"
                                 >
-                                  <span className="text-gray-600 p-2 bg-gray-100 w-2/5 shrink-0 break-words capitalize">
+                                  <span className="text-gray-600 p-2 bg-orange-100 w-2/5 shrink-0 break-words capitalize">
                                     {key}:
                                   </span>
                                   <span className="font-medium w-3/5 p-2 shrink-0">
@@ -205,7 +233,7 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                           >
                             <Icon
                               icon="mdi:map-marker"
-                              className="w-4 h-4 mr-1"
+                              className="w-4 h-4 mr-1 text-orange-500"
                             />
                             Geometry
                           </Typography>
@@ -235,13 +263,19 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
                         {onZoomToFeature && (
                           <Button
                             variant="contained"
-                            color="primary"
                             size="small"
                             onClick={() => {
                               onZoomToFeature(feature);
                               onClose();
                             }}
                             className="mt-2"
+                            sx={{
+                              color: "white",
+                              backgroundColor: "#f59e42",
+                              "&:hover": {
+                                backgroundColor: "#d97706",
+                              },
+                            }}
                           >
                             Zoom to on Map
                           </Button>
@@ -255,7 +289,7 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
           )}
         </Box>
         {/* Footer */}
-        <Box className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <Box className="p-4 border-t border-gray-200 dark:border-gray-700 bg-orange-50 dark:bg-orange-900/10">
           <Typography
             variant="caption"
             className="text-gray-500 text-center block"
@@ -266,6 +300,11 @@ const JunctionDrawerDetails: FC<IJunctionDrawerDetails> = ({
             variant="determinate"
             value={100}
             className="mt-2 rounded-full"
+            sx={{
+              "& .MuiLinearProgress-bar": {
+                backgroundColor: "#f59e42",
+              },
+            }}
           />
         </Box>
       </Box>

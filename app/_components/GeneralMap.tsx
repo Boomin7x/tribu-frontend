@@ -18,7 +18,7 @@ import Map, {
   useMap,
 } from "react-map-gl/mapbox";
 import { useDispatch, useSelector } from "react-redux";
-import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
+// import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
 import useBuildingUtils from "../_hooks/useBuildingUtils";
 import useRoadsUtils from "../_hooks/useRoadsUtils";
 import useJunctionUtils from "../_hooks/useJunctionUtils";
@@ -66,19 +66,6 @@ export const convertFakeDataCoordinates = (
     features: convertedFeatures,
   };
 };
-
-const fakeData: FeatureCollection = convertFakeDataCoordinates(oldFakeData);
-
-console.log("oldFakeData:", oldFakeData);
-console.log("fakeData:", fakeData);
-console.log(
-  "Original coordinates:",
-  (oldFakeData?.data?.features?.[0]?.geometry as any)?.coordinates?.[0]?.[0]
-);
-console.log(
-  "Converted coordinates:",
-  (fakeData.features?.[0]?.geometry as any)?.coordinates?.[0]?.[0]
-);
 
 const GeneralMapsComponent = () => {
   const dispatch = useDispatch();
@@ -448,5 +435,5 @@ const MapUpdater = ({ coordinates }: { coordinates: any }) => {
 
   return null;
 };
-
 export const GeneralMaps = React.memo(GeneralMapsComponent);
+export default GeneralMaps;

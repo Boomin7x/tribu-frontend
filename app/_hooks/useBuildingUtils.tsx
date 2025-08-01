@@ -1,79 +1,67 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { FC, useMemo, useCallback } from "react";
-import { useDispatch, useSelector, shallowEqual } from "react-redux";
-import { RootState } from "../store/store";
-import { Layer, Popup, Source } from "react-map-gl/mapbox";
+import React, { useCallback, useMemo } from "react";
+import { Layer, Marker, Popup, Source } from "react-map-gl/mapbox";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import {
   MapCategoryState,
   setSelectedFeature,
 } from "../store/slice/map_category.slice";
-import { Marker } from "react-map-gl/mapbox";
+import { RootState } from "../store/store";
 
 // Memoized LayerSource to prevent unnecessary rerenders
-const LayerSource: FC<{ category: string; catState: MapCategoryState }> =
-  React.memo(function LayerSource({ catState, category }) {
-    const geojsonData = useMemo(
-      () => ({
-        type: "FeatureCollection" as const,
-        features: catState.features ?? [],
-      }),
-      [catState.features]
-    );
+const LayerSource = React.memo<{
+  category: string;
+  catState: MapCategoryState;
+  isVisible: boolean;
+}>(({ category, catState, isVisible }) => {
+  const geojsonData = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: catState.features ?? [],
+    }),
+    [catState.features]
+  );
+  return (
+    <Source id={`source-${category}`} type="geojson" data={geojsonData}>
+      <Layer
+        id={`fill-${category}`}
+        type="fill-extrusion"
+        layout={{
+          visibility: isVisible ? "visible" : "none",
+        }}
+        paint={{
+          "fill-extrusion-height": 30,
+          "fill-extrusion-color": "#8B5CF6", // Purple color
+          // "fill-extrusion-opacity": 0.85,
+          "fill-extrusion-opacity": 1,
+          "fill-extrusion-base": 0,
+        }}
+      />
+    </Source>
+  );
+});
+LayerSource.displayName = "LayerSource";
 
+const BuildingLayers = React.memo<{
+  mapFeatures: Record<string, MapCategoryState | undefined>;
+}>(({ mapFeatures }) => {
+  return Object.entries(mapFeatures).map(([category, catState]) => {
+    const isVisible = Boolean(
+      catState?.toggleMavView &&
+        catState.features &&
+        catState.features.length > 0
+    );
     return (
-      <Source id={`source-${category}`} type="geojson" data={geojsonData}>
-        {/* Hide Mapbox's built-in buildings */}
-        {/* <Layer
-          id={`hide-buildings-${category}`}
-          type="fill"
-          source="composite"
-          source-layer="building"
-          paint={{
-            "fill-color": "transparent",
-            "fill-opacity": 0,
-          }}
-        /> */}
-        <Layer
-          id={`fill-${category}`}
-          type="fill-extrusion"
-          paint={{
-            "fill-extrusion-height": 30,
-            "fill-extrusion-color": "#8B5CF6", // Purple color
-            // "fill-extrusion-opacity": 0.85,
-            "fill-extrusion-opacity": 1,
-            "fill-extrusion-base": 0,
-          }}
-        />
-        {/* <Layer
-          id={`${category}-labels`}
-          type="symbol"
-          layout={{
-            "text-field": ["get", "building"], // Use 'name' property, fallback to 'building' if needed
-            "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
-            "text-size": 12,
-            "text-anchor": "center",
-            "text-justify": "center",
-            "text-allow-overlap": false,
-            "text-ignore-placement": false,
-          }}
-          paint={{
-            "text-color": "#333333",
-            "text-halo-color": "#ffffff",
-            "text-halo-width": 1,
-          }}
-        /> */}
-        {/* <Layer
-          id={`outline-${category}`}
-          type="line"
-          paint={{
-            "line-color": "#333",
-            "line-width": 2,
-          }}
-        /> */}
-      </Source>
+      <LayerSource
+        catState={catState as MapCategoryState}
+        category={category}
+        key={category}
+        isVisible={isVisible}
+      />
     );
   });
-LayerSource.displayName = "LayerSource";
+});
+BuildingLayers.displayName = "BuildingLayers";
 
 const useBuildingUtils = () => {
   const mapFeatures = useSelector(
@@ -88,26 +76,32 @@ const useBuildingUtils = () => {
     [mapFeatures]
   );
 
-  // Memoize BuildingLayers
-  const BuildingLayers = useMemo(() => {
-    const Component = () => (
-      <>
-        {Object.entries(mapFeatures).map(([category, catState]) =>
-          catState?.toggleMavView &&
-          catState.features &&
-          catState.features.length > 0 ? (
-            <LayerSource
-              catState={catState}
-              category={category}
-              key={category}
-            />
-          ) : null
-        )}
-      </>
-    );
-    Component.displayName = "BuildingLayers";
+  const NewBuildingLayers = useMemo(() => {
+    const Component = () => <BuildingLayers mapFeatures={mapFeatures} />;
+    Component.displayName = "NewBuildingLayers";
     return Component;
   }, [mapFeatures]);
+
+  // Memoize BuildingLayers
+  // const BuildingLayers = useMemo(() => {
+  //   const Component = () => (
+  //     <>
+  //       {Object.entries(mapFeatures).map(([category, catState]) =>
+  //         catState?.toggleMavView &&
+  //         catState.features &&
+  //         catState.features.length > 0 ? (
+  //           <LayerSource
+  //             catState={catState}
+  //             category={category}
+  //             key={category}
+  //           />
+  //         ) : null
+  //       )}
+  //     </>
+  //   );
+  //   Component.displayName = "BuildingLayers";
+  //   return Component;
+  // }, [mapFeatures]);
 
   // Define BuildingPopups as a named component to fix missing display name lint
   const BuildingPopups = useMemo(() => {
@@ -289,7 +283,7 @@ const useBuildingUtils = () => {
     BuildingPopups,
     onBuildingMapClick,
     interactiveLayerIds,
-    BuildingLayers,
+    BuildingLayers: NewBuildingLayers,
     BuildingMarkers,
   };
 };
