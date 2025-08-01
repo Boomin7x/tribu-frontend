@@ -14,7 +14,7 @@ const createInitialJunctionState = (): MapJunctionState => ({
   selectedFeature: null,
   hoveredFeature: null,
   zoomToFeature: null,
-  toggleJunctionView: true,
+  toggleJunctionView: false,
 });
 
 const initialMapJunctionState: Record<string, MapJunctionState | undefined> =

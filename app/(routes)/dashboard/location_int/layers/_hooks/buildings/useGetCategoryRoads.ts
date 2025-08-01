@@ -11,5 +11,6 @@ export const useGetCategoryRoads = (
     queryKey: [MAP_QUERY_KEY.GET_CATEGORY_ROADS, params],
     queryFn: () => roadsApi.getCategoryrRoads(params),
     enabled,
+    staleTime: 5 * 60 * 1000,
   });
 };

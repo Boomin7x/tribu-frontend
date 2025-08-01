@@ -6,7 +6,7 @@ import {
   Typography,
 } from "@mui/material";
 import { JunctionType } from "../../_utils/enum";
-import JunctionCategories from "../roads/junctions/junctionCategories";
+import JunctionCategories from "../junctions/junctionCategories";
 
 const JUNCTION_TYPES = [
   JunctionType.ThreeWay,

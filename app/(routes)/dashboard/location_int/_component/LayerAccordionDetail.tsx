@@ -15,6 +15,7 @@ import BuildingDrawerDetails from "../layers/_component/buildings/BuildingDrawer
 import { useGetBuildingByCategory } from "../layers/_hooks/buildings";
 import { IBuildingApiResponse } from "../layers/_utils/types/buildings/buildings_types";
 import { convertFakeDataCoordinates } from "@/app/_utils/coordinateUtils";
+import { cn } from "@/app/lib/tailwindLib";
 
 interface ILayerAccordionDetail {
   category: string;
@@ -23,35 +24,37 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const dispatch = useDispatch();
 
-  // Only select the toggle state for this category
   const isView = useSelector(
     (state: RootState) => state.map_many[category]?.toggleMavView,
     shallowEqual
   );
 
-  const { data } = useGetBuildingByCategory({
-    bbox: bbox.params,
-    building_category: category,
-  });
+  const { data, isLoading } = useGetBuildingByCategory(
+    {
+      bbox: bbox.params,
+      building_category: category,
+    },
+    isView
+  );
 
-  // Memoize conversion
   const convertedData: FeatureCollection = useMemo(
     () => convertFakeDataCoordinates(data),
     [data]
   );
 
-  // Only update features when convertedData changes
   useEffect(() => {
-    dispatch(
-      setFeatures({
-        category,
-        features: convertedData?.features ?? null,
-      })
-    );
-    dispatch(setToggleView({ category, isOpen: true }));
+    if (convertedData?.features?.length) {
+      dispatch(
+        setFeatures({
+          category,
+          features: convertedData?.features ?? null,
+        })
+      );
+    }
+
+    // dispatch(setToggleView({ category, isOpen: true }));
   }, [category, convertedData, dispatch]);
 
-  // Memoize handlers
   const handleIsDetailsOpen = useCallback(() => {
     setIsDetailsOpen((prev) => !prev);
   }, []);
@@ -61,13 +64,23 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
   }, [dispatch, category, isView]);
 
   return (
-    <div className="flex items-center justify-between p-2 border-b last:border-0">
+    <div
+      className={cn(
+        "flex items-center justify-between p-2 border-b last:border-0",
+        isView && "bg-[#8B5CF6] text-white"
+      )}
+    >
       <Typography className="capitalize">
         {category?.replace(/_/g, " ")}
       </Typography>
       <div className="flex items-center gap-3">
+        {isLoading && (
+          <div className="size-4 rounded-full border-2 border-t-gray-200/20 animate-spin" />
+        )}
+        <div />
         <Tooltip title="More details" arrow>
           <IconButton
+            color="inherit"
             aria-label="Button"
             disabled={!isView}
             onClick={handleIsDetailsOpen}
@@ -76,7 +89,7 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
           </IconButton>
         </Tooltip>
         <Tooltip title="Toggle visibility" arrow>
-          <IconButton onClick={handleToggleView}>
+          <IconButton color="inherit" onClick={handleToggleView}>
             <Icon
               icon={isView ? "mdi:eye-outline" : "mdi:eye-off-outline"}
               className="size-4"
@@ -89,6 +102,7 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
           data={data as IBuildingApiResponse}
           onClose={handleIsDetailsOpen}
           open={isDetailsOpen}
+          isLoading={isLoading}
           onZoomToFeature={(feature) => dispatch(setZoomToFeature(feature))}
         />
       ) : null}

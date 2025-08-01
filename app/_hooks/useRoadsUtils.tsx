@@ -36,32 +36,36 @@ export const ROAD_CATEGORY_COLORS: Record<string, string> = {
 };
 
 // Memoized LayerSource for roads
-const RoadLayerSource: React.FC<{ category: string; catState: any }> =
-  React.memo(function RoadLayerSource({ catState, category }) {
-    const geojsonData = useMemo(
-      () => ({
-        type: "FeatureCollection" as const,
-        features: catState.features ?? [],
-      }),
-      [catState.features]
-    );
-    // Pick color for this category, fallback to red
-    const lineColor = ROAD_CATEGORY_COLORS[category] || "#e33116";
-    return (
-      <Source id={`road-source-${category}`} type="geojson" data={geojsonData}>
-        <Layer
-          id={`road-line-${category}`}
-          type="line"
-          paint={{
-            "line-color": lineColor,
-            "line-width": 8,
-            // Temporarily use solid line for debugging
-            // "line-dasharray": [2, 4],
-          }}
-        />
-      </Source>
-    );
-  });
+const RoadLayerSource = React.memo<{
+  category: string;
+  catState: any;
+  isVisible: boolean;
+}>(({ category, catState, isVisible }) => {
+  const geojsonData = useMemo(
+    () => ({
+      type: "FeatureCollection" as const,
+      features: catState.features ?? [],
+    }),
+    [catState.features]
+  );
+  // Pick color for this category, fallback to red
+  const lineColor = ROAD_CATEGORY_COLORS[category] || "#e33116";
+  return (
+    <Source id={`road-source-${category}`} type="geojson" data={geojsonData}>
+      <Layer
+        id={`road-line-${category}`}
+        type="line"
+        layout={{
+          visibility: isVisible ? "visible" : "none",
+        }}
+        paint={{
+          "line-color": lineColor,
+          "line-width": 8,
+        }}
+      />
+    </Source>
+  );
+});
 RoadLayerSource.displayName = "RoadLayerSource";
 
 // Utility to ensure only serializable features are stored in Redux
@@ -103,17 +107,21 @@ const useRoadsUtils = () => {
   const RoadLayers = useMemo(() => {
     const Component = React.memo(() => (
       <>
-        {Object.entries(mapRoads).map(([category, catState]) =>
-          roadToggleStates[category] &&
-          catState?.features &&
-          catState.features.length > 0 ? (
+        {Object.entries(mapRoads).map(([category, catState]) => {
+          const isVisible = Boolean(
+            catState?.toggleRoadView &&
+              catState.features &&
+              catState.features.length > 0
+          );
+          return (
             <RoadLayerSource
+              isVisible={isVisible}
               catState={catState}
               category={category}
               key={category}
             />
-          ) : null
-        )}
+          );
+        })}
       </>
     ));
     Component.displayName = "RoadLayers";
