@@ -8,6 +8,29 @@ import {
 } from "../store/slice/map_category.slice";
 import { RootState } from "../store/store";
 
+// Building category to color mapping
+export const BUILDING_CATEGORY_COLORS: Record<string, string> = {
+  residential: "#3B82F6", // blue
+  commercial: "#F59E0B", // amber
+  public_service: "#10B981", // emerald
+  industrial: "#EF4444", // red
+  mixed: "#8B5CF6", // purple
+  other: "#6B7280", // gray
+};
+
+function getDeterministicColorFromString(input: string): string {
+  // Simple string hash
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+    hash = input.charCodeAt(i) + ((hash << 5) - hash);
+    hash |= 0; // Convert to 32bit int
+  }
+  // Map hash to hue [0, 360)
+  const hue = Math.abs(hash) % 360;
+  // Fixed saturation/lightness to ensure good contrast
+  return `hsl(${hue}, 70%, 50%)`;
+}
+
 // Memoized LayerSource to prevent unnecessary rerenders
 const LayerSource = React.memo<{
   category: string;
@@ -21,6 +44,13 @@ const LayerSource = React.memo<{
     }),
     [catState.features]
   );
+  const fillColor = useMemo(
+    () =>
+      BUILDING_CATEGORY_COLORS[category] ||
+      getDeterministicColorFromString(category),
+    [category]
+  );
+
   return (
     <Source id={`source-${category}`} type="geojson" data={geojsonData}>
       <Layer
@@ -31,7 +61,7 @@ const LayerSource = React.memo<{
         }}
         paint={{
           "fill-extrusion-height": 30,
-          "fill-extrusion-color": "#8B5CF6", // Purple color
+          "fill-extrusion-color": fillColor,
           // "fill-extrusion-opacity": 0.85,
           "fill-extrusion-opacity": 1,
           "fill-extrusion-base": 0,

@@ -14,7 +14,7 @@ export function convertProjectedToGeographic(
 }
 
 export function convertFeatureToGeographic(feature: Feature): Feature {
-  if (feature.geometry.type === "Polygon") {
+  if (feature?.geometry?.type === "Polygon") {
     return {
       ...feature,
       geometry: {

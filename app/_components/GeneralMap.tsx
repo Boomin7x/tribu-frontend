@@ -362,7 +362,7 @@ const GeneralMapsComponent = () => {
       </MapProvider>
     </div>
   );
-});
+};
 
 GeneralMapsComponent.displayName = "GeneralMapsComponent";
 
@@ -466,6 +466,8 @@ const MapUpdater = React.memo(({ coordinates }: { coordinates: any }) => {
   }, [map, mapJunctions, dispatch]);
 
   return null;
-};
+});
+MapUpdater.displayName = "MapUpdater";
+
 export const GeneralMaps = React.memo(GeneralMapsComponent);
 export default GeneralMaps;

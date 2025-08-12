@@ -1,74 +1,47 @@
 // import { convertFakeDataCoordinates } from "@/app/_components/GeneralMap";
-import { bbox } from "@/app/_utils";
+import { cn } from "@/app/lib/tailwindLib";
 import { setZoomToFeature } from "@/app/store/slice/map.slice";
-import {
-  setFeatures,
-  setToggleMapView as setToggleView,
-} from "@/app/store/slice/map_category.slice";
-import { RootState } from "@/app/store/store";
 import { Icon } from "@iconify/react";
 import { IconButton, Tooltip, Typography } from "@mui/material";
-import { FeatureCollection } from "geojson";
-import { FC, useEffect, useMemo, useState, useCallback } from "react";
-import { useDispatch, useSelector, shallowEqual } from "react-redux";
+import { FC, useMemo } from "react";
 import BuildingDrawerDetails from "../layers/_component/buildings/BuildingDrawerDetails";
-import { useGetBuildingByCategory } from "../layers/_hooks/buildings";
+import useBuildingCategoriesUtils from "../layers/_hooks/buildings/useBuildingCategoriesUtils";
 import { IBuildingApiResponse } from "../layers/_utils/types/buildings/buildings_types";
-import { convertFakeDataCoordinates } from "@/app/_utils/coordinateUtils";
-import { cn } from "@/app/lib/tailwindLib";
+import { BUILDING_CATEGORY_COLORS } from "@/app/_hooks/useBuildingUtils";
+import { isColorLight } from "../layers/_utils";
 
 interface ILayerAccordionDetail {
   category: string;
 }
 const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const dispatch = useDispatch();
+  const {
+    data,
+    dispatch,
+    handleIsDetailsOpen,
+    handleToggleView,
+    isDetailsOpen,
+    isLoading,
+    isView,
+  } = useBuildingCategoriesUtils({ category });
 
-  const isView = useSelector(
-    (state: RootState) => state.map_many[category]?.toggleMavView,
-    shallowEqual
+  const buildingColor = useMemo(
+    () => BUILDING_CATEGORY_COLORS[category] || "#8B5CF6",
+    [category]
   );
-
-  const { data, isLoading } = useGetBuildingByCategory(
-    {
-      bbox: bbox.params,
-      building_category: category,
-    },
-    isView
-  );
-
-  const convertedData: FeatureCollection = useMemo(
-    () => convertFakeDataCoordinates(data),
-    [data]
-  );
-
-  useEffect(() => {
-    if (convertedData?.features?.length) {
-      dispatch(
-        setFeatures({
-          category,
-          features: convertedData?.features ?? null,
-        })
-      );
-    }
-
-    // dispatch(setToggleView({ category, isOpen: true }));
-  }, [category, convertedData, dispatch]);
-
-  const handleIsDetailsOpen = useCallback(() => {
-    setIsDetailsOpen((prev) => !prev);
-  }, []);
-
-  const handleToggleView = useCallback(() => {
-    dispatch(setToggleView({ category, isOpen: !isView }));
-  }, [dispatch, category, isView]);
+  const textColor = useMemo(() => {
+    if (!isView) return undefined;
+    return isColorLight(buildingColor) ? "black" : "white";
+  }, [isView, buildingColor]);
 
   return (
     <div
       className={cn(
-        "flex items-center justify-between p-2 border-b last:border-0",
-        isView && "bg-[#8B5CF6] text-white"
+        "flex items-center justify-between p-2 border-b last:border-0"
       )}
+      style={{
+        backgroundColor: isView ? buildingColor : undefined,
+        color: textColor,
+      }}
     >
       <Typography className="capitalize">
         {category?.replace(/_/g, " ")}
@@ -103,6 +76,7 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
           onClose={handleIsDetailsOpen}
           open={isDetailsOpen}
           isLoading={isLoading}
+          category={category}
           onZoomToFeature={(feature) => dispatch(setZoomToFeature(feature))}
         />
       ) : null}

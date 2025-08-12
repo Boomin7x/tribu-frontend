@@ -30,6 +30,9 @@ import { Feature } from "geojson";
 import { convertFeatureToGeographic } from "@/app/_utils/coordinateUtils";
 import RoadDrawerDetailsSkeleton from "../roads/roadDrawerDetailsSkeleton";
 import MapCategoryDetailsDrawerLayout from "./MapCategoryDetailDrawer";
+import { BUILDING_CATEGORY_COLORS } from "@/app/_hooks/useBuildingUtils";
+import { isColorLight } from "../../_utils";
+import { cn } from "@/app/lib/tailwindLib";
 
 interface IBuildingDrawerDetails {
   open: boolean;
@@ -37,6 +40,7 @@ interface IBuildingDrawerDetails {
   data: IBuildingApiResponse;
   onZoomToFeature?: (feature: Feature) => void;
   isLoading?: boolean;
+  category: string;
 }
 
 const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
@@ -45,7 +49,33 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
   open,
   onZoomToFeature,
   isLoading,
+  category,
 }) => {
+  const categoryColor = useMemo(
+    () => BUILDING_CATEGORY_COLORS[category] || "#8B5CF6",
+    [category]
+  );
+
+  const rgba = (hex: string, alpha: number) => {
+    const h = hex.replace("#", "");
+    const r = parseInt(h.substring(0, 2), 16);
+    const g = parseInt(h.substring(2, 4), 16);
+    const b = parseInt(h.substring(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const darken = (hex: string, factor = 0.85) => {
+    const h = hex.replace("#", "");
+    let r = Math.round(parseInt(h.substring(0, 2), 16) * factor);
+    let g = Math.round(parseInt(h.substring(2, 4), 16) * factor);
+    let b = Math.round(parseInt(h.substring(4, 6), 16) * factor);
+    r = Math.min(255, Math.max(0, r));
+    g = Math.min(255, Math.max(0, g));
+    b = Math.min(255, Math.max(0, b));
+    const toHex = (v: number) => v.toString(16).padStart(2, "0");
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
+
   console.log({ data });
   // Guard: Only proceed if data, data.data, and data.data.features are valid
   // if (true) {
@@ -88,21 +118,56 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
   const getBuildingIcon = (building: string | null) => {
     switch (building) {
       case "school":
-        return <Icon icon="mdi:school" className="text-purple-500 w-6 h-6" />;
+        return (
+          <Icon
+            icon="mdi:school"
+            className={cn(
+              "text-purple-500 w-6 h-6",
+              categoryColor && `text-[${categoryColor}]`
+            )}
+            style={{
+              color: categoryColor,
+            }}
+          />
+        );
       case "public":
         return (
           <Icon
             icon="mdi:office-building"
-            className="text-purple-500 w-6 h-6"
+            className={cn(
+              "text-purple-500 w-6 h-6",
+              categoryColor && `text-[${categoryColor}]`
+            )}
+            style={{
+              color: categoryColor,
+            }}
           />
         );
       case "office":
         return (
-          <Icon icon="mdi:briefcase" className="text-purple-500 w-6 h-6" />
+          <Icon
+            icon="mdi:briefcase"
+            className={cn(
+              "text-purple-500 w-6 h-6",
+              categoryColor && `text-[${categoryColor}]`
+            )}
+            style={{
+              color: categoryColor,
+            }}
+          />
         );
       default:
         return (
-          <Icon icon="mdi:map-marker" className="text-purple-500 w-6 h-6" />
+          <Icon
+            icon="mdi:map-marker"
+            className={cn(
+              "text-purple-500 w-6 h-6",
+              categoryColor && `text-[${categoryColor}]`
+            )}
+            style={{
+              color: categoryColor,
+            }}
+          />
         );
     }
   };
@@ -197,10 +262,15 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
             <Box className="p-6 border-b border-gray-200 dark:border-gray-700">
               <Box className="flex items-center justify-between mb-4">
                 <Box className="flex items-center space-x-2">
-                  <Icon icon="mdi:layers" className="text-purple-500 w-6 h-6" />
+                  <Icon
+                    icon="mdi:layers"
+                    className="w-6 h-6"
+                    style={{ color: categoryColor }}
+                  />
                   <Typography
                     variant="h5"
-                    className="font-bold bg-gradient-to-r from-purple-600 to-purple-800 bg-clip-text text-transparent"
+                    className="font-bold"
+                    style={{ color: categoryColor }}
                   >
                     Buildings Data Viewer
                   </Typography>
@@ -208,7 +278,9 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                 <Tooltip arrow title="Close drawer">
                   <IconButton
                     onClick={onClose}
-                    className="hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                    sx={{
+                      "&:hover": { backgroundColor: rgba(categoryColor, 0.12) },
+                    }}
                   >
                     <Icon icon="mdi:close" className="w-6 h-6" />
                   </IconButton>
@@ -217,11 +289,12 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
 
               {/* Stats Cards */}
               <Box className="grid grid-cols-3 gap-3 mb-4">
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+                <Card sx={{ backgroundColor: rgba(categoryColor, 0.08) }}>
                   <CardContent className="p-3">
                     <Typography
                       variant="h6"
-                      className="font-bold text-purple-600"
+                      className="font-bold"
+                      style={{ color: categoryColor }}
                     >
                       {data.data.features.length}
                     </Typography>
@@ -230,11 +303,12 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                     </Typography>
                   </CardContent>
                 </Card>
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+                <Card sx={{ backgroundColor: rgba(categoryColor, 0.08) }}>
                   <CardContent className="p-3">
                     <Typography
                       variant="h6"
-                      className="font-bold text-purple-600"
+                      className="font-bold"
+                      style={{ color: categoryColor }}
                     >
                       {buildingTypes.length}
                     </Typography>
@@ -243,11 +317,12 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                     </Typography>
                   </CardContent>
                 </Card>
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20">
+                <Card sx={{ backgroundColor: rgba(categoryColor, 0.08) }}>
                   <CardContent className="p-3">
                     <Typography
                       variant="h6"
-                      className="font-bold text-purple-600"
+                      className="font-bold"
+                      style={{ color: categoryColor }}
                     >
                       {data.page ?? 0}
                     </Typography>
@@ -270,7 +345,8 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                       <InputAdornment position="start">
                         <Icon
                           icon="mdi:magnify"
-                          className="text-purple-400 w-5 h-5"
+                          className="w-5 h-5"
+                          style={{ color: categoryColor }}
                         />
                       </InputAdornment>
                     ),
@@ -279,10 +355,10 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                   sx={{
                     "& .MuiOutlinedInput-root": {
                       "&:hover fieldset": {
-                        borderColor: "#8B5CF6",
+                        borderColor: categoryColor,
                       },
                       "&.Mui-focused fieldset": {
-                        borderColor: "#8B5CF6",
+                        borderColor: categoryColor,
                       },
                     },
                   }}
@@ -325,16 +401,28 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                   {filteredFeatures.map((feature, index) => (
                     <Card
                       key={feature.id}
-                      className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600"
+                      className="overflow-hidden transition-all duration-300 hover:shadow-lg border border-gray-200 dark:border-gray-700"
+                      sx={{
+                        borderColor: rgba(categoryColor, 0.35),
+                        "&:hover": { borderColor: categoryColor },
+                      }}
                     >
                       <ListItemButton
                         onClick={() => toggleFeature(feature?.id as number)}
-                        className="p-4 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                        className="p-4"
+                        sx={{
+                          "&:hover": {
+                            backgroundColor: rgba(categoryColor, 0.08),
+                          },
+                        }}
                       >
                         <ListItemIcon>
                           <Badge
                             badgeContent={index + 1}
-                            color="secondary"
+                            // color="secondary"
+                            className={
+                              categoryColor && `bg-[${categoryColor}] `
+                            }
                             anchorOrigin={{
                               vertical: "top",
                               horizontal: "right",
@@ -365,7 +453,14 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                               <Chip
                                 label={feature.geometry.type}
                                 size="small"
-                                color="secondary"
+                                sx={{
+                                  backgroundColor: rgba(categoryColor, 0.12),
+                                  color: isColorLight(categoryColor)
+                                    ? "#111827"
+                                    : "#111827",
+                                  borderColor: rgba(categoryColor, 0.35),
+                                }}
+                                variant="outlined"
                                 className="ml-2"
                               />
                             </Box>
@@ -400,7 +495,9 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                         timeout="auto"
                       >
                         <Divider />
-                        <CardContent className="bg-purple-50 dark:bg-purple-900/10">
+                        <CardContent
+                          sx={{ backgroundColor: rgba(categoryColor, 0.06) }}
+                        >
                           <Stack spacing={2}>
                             {/* Properties */}
                             <Box>
@@ -410,7 +507,8 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                               >
                                 <Icon
                                   icon="mdi:information"
-                                  className="w-4 h-4 mr-1 text-purple-500"
+                                  className="w-4 h-4 mr-1"
+                                  style={{ color: categoryColor }}
                                 />
                                 Properties
                               </Typography>
@@ -441,7 +539,8 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                               >
                                 <Icon
                                   icon="mdi:map-marker"
-                                  className="w-4 h-4 mr-1 text-purple-500"
+                                  className="w-4 h-4 mr-1"
+                                  style={{ color: categoryColor }}
                                 />
                                 Geometry
                               </Typography>
@@ -500,9 +599,9 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                               className="mt-2"
                               sx={{
                                 color: "white",
-                                backgroundColor: "#8B5CF6",
+                                backgroundColor: categoryColor,
                                 "&:hover": {
-                                  backgroundColor: "#7C3AED",
+                                  backgroundColor: darken(categoryColor),
                                 },
                               }}
                             >
@@ -518,7 +617,10 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
             </Box>
 
             {/* Footer */}
-            <Box className="p-4 border-t border-gray-200 dark:border-gray-700 bg-purple-50 dark:bg-purple-900/10">
+            <Box
+              className="p-4 border-t border-gray-200 dark:border-gray-700"
+              sx={{ backgroundColor: rgba(categoryColor, 0.06) }}
+            >
               <Typography
                 variant="caption"
                 className="text-gray-500 text-center block"
@@ -534,7 +636,7 @@ const BuildingDrawerDetails: FC<IBuildingDrawerDetails> = ({
                 className="mt-2 rounded-full"
                 sx={{
                   "& .MuiLinearProgress-bar": {
-                    backgroundColor: "#8B5CF6",
+                    backgroundColor: categoryColor,
                   },
                 }}
               />
