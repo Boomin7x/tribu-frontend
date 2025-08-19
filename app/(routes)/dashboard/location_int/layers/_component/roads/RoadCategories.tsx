@@ -136,15 +136,15 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
           </IconButton>
         </Tooltip>
       </div>
-      {isDetailsOpen && (
-        <RoadDrawerDetails
-          isLoading={isLoading}
-          open={isDetailsOpen}
-          onClose={handleIsDetailsOpen}
-          data={convertedData}
-          onZoomToFeature={handleZoomToFeature}
-        />
-      )}
+      {/* {isDetailsOpen && ( */}
+      <RoadDrawerDetails
+        isLoading={isLoading}
+        open={isDetailsOpen}
+        onClose={handleIsDetailsOpen}
+        data={convertedData}
+        onZoomToFeature={handleZoomToFeature}
+      />
+      {/* )} */}
     </div>
   );
 };
