@@ -1,8 +1,10 @@
 // import BuildingLayers from './layers/building_layers';
 
+import { Divider } from "@mui/material";
 import { BuildingLayers } from "./sideLayers/BuildingLayers";
 import JunctionLayer from "./sideLayers/JunctionLayer";
 import { RoadLayers } from "./sideLayers/roadLayers";
+import WeatherLayers from "./sideLayers/weatherLayers";
 
 export const LILayerSidebarContent = () => {
   //   type ILayersItem = {
@@ -73,6 +75,8 @@ export const LILayerSidebarContent = () => {
       <BuildingLayers />
       <RoadLayers />
       <JunctionLayer />
+      <Divider sx={{ my: 2 }} />
+      <WeatherLayers />
     </>
   );
 };
