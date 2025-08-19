@@ -36,6 +36,7 @@ const useBuildingCategoriesUtils = ({
     shallowEqual
   );
   const fetchMore = useCallback(() => {
+    console.log(limit);
     setLimit((prev) => prev + 10);
   }, []);
 
@@ -52,7 +53,7 @@ const useBuildingCategoriesUtils = ({
     {
       bbox: globalBbox?.join(",") ?? bbox.params,
       building_category: category,
-      limit,
+      // limit,
     },
     true
   );
