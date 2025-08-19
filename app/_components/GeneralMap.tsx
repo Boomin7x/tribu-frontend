@@ -9,7 +9,7 @@ import {
 import type { RootState } from "@/app/store/store";
 import { Icon } from "@iconify/react";
 import { FeatureCollection } from "geojson";
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import type { LayerProps } from "react-map-gl/mapbox";
 import Map, {
   MapProvider,
@@ -20,16 +20,16 @@ import Map, {
 import { useDispatch, useSelector } from "react-redux";
 // import { fakeData as oldFakeData } from "../(routes)/dashboard/location_int/layers/_component/buildings/BuildingDrawerDetails";
 import useBuildingUtils from "../_hooks/useBuildingUtils";
-import useRoadsUtils from "../_hooks/useRoadsUtils";
-import useJunctionUtils from "../_hooks/useJunctionUtils";
 import useDebounce from "../_hooks/useDebounce";
 import useGeocode from "../_hooks/useGeoCode";
 import useGeolocation from "../_hooks/useGeolocation";
+import useJunctionUtils from "../_hooks/useJunctionUtils";
+import useRoadsUtils from "../_hooks/useRoadsUtils";
 import { setZoomToFeature as setCatZoom } from "../store/slice/map_category.slice";
+import { setZoomToJunctionFeature } from "../store/slice/map_junction.slice";
+import { setZoomToRoadFeature } from "../store/slice/map_road.slice";
 import AppInput from "./AppInput";
 import AppLoader from "./AppLoader";
-import { setZoomToRoadFeature } from "../store/slice/map_road.slice";
-import { setZoomToJunctionFeature } from "../store/slice/map_junction.slice";
 
 const convertProjectedToGeographic = (
   x: number,
@@ -77,7 +77,7 @@ const GeneralMapsComponent = () => {
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
   const [isStyleLoaded, setIsStyleLoaded] = useState(false);
   const { setLocation } = useGeolocation(false);
-  const [address, setAddress] = useState("douala");
+  const [address, setAddress] = useState("bonaberi");
   const { loading, geoData, geocode } = useGeocode();
   const [debouncedAddress] = useDebounce(address, 500);
 
@@ -101,6 +101,7 @@ const GeneralMapsComponent = () => {
   useEffect(() => {
     if (geoData) {
       setLocation(geoData?.coordinates);
+      // dispatch(setGlobalBbox({ bbox: geoData?.bbox }));
     }
   }, [geoData]);
 
@@ -170,7 +171,7 @@ const GeneralMapsComponent = () => {
   const memoizedMarkers = useMemo(
     () => (
       <>
-        <BuildingMarkers />
+        {/* <BuildingMarkers /> */}
         <JunctionMarkers />
       </>
     ),

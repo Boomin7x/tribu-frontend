@@ -11,7 +11,10 @@ import { Feature, FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { findDensestCell } from "../../_utils";
-import { useGetBuildingByCategory } from "./useGetBuildingByCategory";
+import {
+  useGetBuildingByCategory,
+  useGetInfinityBuildingsByCategory,
+} from "./useGetBuildingByCategory";
 
 interface IUseBuildingCategoriesUtils {
   category: string;
@@ -21,6 +24,12 @@ const useBuildingCategoriesUtils = ({
 }: IUseBuildingCategoriesUtils) => {
   const dispatch = useDispatch();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [limit, setLimit] = useState(35);
+
+  const globalBbox = useSelector(
+    (state: RootState) => state.globalBbox.bbox,
+    shallowEqual
+  );
 
   const isView = useSelector(
     (state: RootState) => state.map_many[category]?.toggleMavView,
@@ -30,6 +39,9 @@ const useBuildingCategoriesUtils = ({
     (state: RootState) => state.map_many,
     shallowEqual
   );
+  const fetchMore = useCallback(() => {
+    setLimit((prev) => prev + 10);
+  }, []);
 
   const arrayWithMaxLength = (
     storeData: Record<string, MapCategoryState | undefined>
@@ -40,10 +52,11 @@ const useBuildingCategoriesUtils = ({
     }, [] as Feature[]);
   };
 
-  const { data, isLoading } = useGetBuildingByCategory(
+  const { data, isLoading, isFetching } = useGetBuildingByCategory(
     {
-      bbox: bbox.params,
+      bbox: globalBbox?.join(",") ?? bbox.params,
       building_category: category,
+      // limit,
     },
     true
   );
@@ -52,6 +65,8 @@ const useBuildingCategoriesUtils = ({
     () => convertFakeDataCoordinates(data),
     [data]
   );
+
+  console.log({ data, convertedData });
 
   useEffect(() => {
     if (convertedData?.features?.length) {
@@ -80,7 +95,7 @@ const useBuildingCategoriesUtils = ({
       20
     );
     // Optional: zoom to it using the category slice
-    dispatch(setZoomToFeature(densestPolygon));
+    // dispatch(setZoomToFeature(densestPolygon));
     return { polygon: densestPolygon, count };
   }, [convertedData, dispatch, category]);
 
@@ -92,13 +107,18 @@ const useBuildingCategoriesUtils = ({
   }, [arrayWithMaxLength.length, dispatch, getDensestArea, roadStore]);
 
   return {
-    data,
+    data: {
+      ...data,
+      data: convertedData,
+    },
     isView,
     dispatch,
     isLoading,
+    fetchMore,
     isDetailsOpen,
     handleToggleView,
     handleIsDetailsOpen,
+    isFetching,
   };
 };
 

@@ -22,6 +22,8 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
     isDetailsOpen,
     isLoading,
     isView,
+    isFetching,
+    // fetchMore,
   } = useBuildingCategoriesUtils({ category });
 
   const buildingColor = useMemo(
@@ -72,10 +74,12 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
       </div>
       {isDetailsOpen ? (
         <BuildingDrawerDetails
+          fetchMore={() => {}}
           data={data as IBuildingApiResponse}
           onClose={handleIsDetailsOpen}
           open={isDetailsOpen}
           isLoading={isLoading}
+          isFetching={isFetching}
           category={category}
           onZoomToFeature={(feature) => dispatch(setZoomToFeature(feature))}
         />

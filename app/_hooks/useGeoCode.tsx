@@ -6,6 +6,7 @@ export interface GeocodeResponse {
   coordinates: Coordinates;
   text: string;
   place_name: string;
+  bbox?: number[];
 }
 
 const useGeocode = () => {
@@ -36,6 +37,7 @@ const useGeocode = () => {
           coordinates: { latitude: center[1], longitude: center[0] },
           place_name,
           text,
+          bbox,
         });
         setError(null);
       } else {
