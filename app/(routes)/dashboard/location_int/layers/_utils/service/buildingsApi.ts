@@ -15,7 +15,7 @@ export const buildingsApi = {
   getBuildingbyCategory: async ({
     bbox,
     building_category,
-    limit = 50,
+    limit,
     page,
   }: IGetBuildingByCategoryParams): Promise<IBuildingApiResponse> => {
     const params = {
