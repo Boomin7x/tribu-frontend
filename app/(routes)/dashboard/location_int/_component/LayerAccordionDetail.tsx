@@ -72,18 +72,18 @@ const LayerAccordionDetail: FC<ILayerAccordionDetail> = ({ category }) => {
           </IconButton>
         </Tooltip>
       </div>
-      {isDetailsOpen ? (
-        <BuildingDrawerDetails
-          fetchMore={() => {}}
-          data={data as IBuildingApiResponse}
-          onClose={handleIsDetailsOpen}
-          open={isDetailsOpen}
-          isLoading={isLoading}
-          isFetching={isFetching}
-          category={category}
-          onZoomToFeature={(feature) => dispatch(setZoomToFeature(feature))}
-        />
-      ) : null}
+      {/* {isDetailsOpen ? ( */}
+      <BuildingDrawerDetails
+        fetchMore={() => {}}
+        data={data as IBuildingApiResponse}
+        onClose={handleIsDetailsOpen}
+        open={isDetailsOpen}
+        isLoading={isLoading}
+        isFetching={isFetching}
+        category={category}
+        onZoomToFeature={(feature) => dispatch(setZoomToFeature(feature))}
+      />
+      {/* ) : null} */}
     </div>
   );
 };

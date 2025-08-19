@@ -53,7 +53,7 @@ const useBuildingCategoriesUtils = ({
     {
       bbox: globalBbox?.join(",") ?? bbox.params,
       building_category: category,
-      // limit,
+      limit,
     },
     true
   );
