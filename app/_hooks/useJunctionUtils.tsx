@@ -18,6 +18,14 @@ interface MapboxFeatureEvent {
   features?: (Feature & { layer: { id: string }; toGeoJSON?: () => Feature })[];
 }
 
+// Junction category to color mapping
+export const JUNCTION_CATEGORY_COLORS: Record<string, string> = {
+  "3WAY": "#3B82F6", // blue
+  "4WAY": "#F59E0B", // amber
+  CMPLX: "#10B981", // emerald
+  ITP: "#EF4444", // red
+};
+
 // Memoized LayerSource for junctions
 const JunctionLayerSource: React.FC<{
   category: string;
@@ -30,6 +38,8 @@ const JunctionLayerSource: React.FC<{
     }),
     [catState.features]
   );
+  // Pick color for this category, fallback to orange
+  const circleColor = JUNCTION_CATEGORY_COLORS[category] || "#f59e42";
   return (
     <Source
       id={`junction-source-${category}`}
@@ -41,7 +51,7 @@ const JunctionLayerSource: React.FC<{
         type="circle"
         paint={{
           "circle-radius": 7,
-          "circle-color": "#f59e42",
+          "circle-color": circleColor,
           "circle-stroke-width": 2,
           "circle-stroke-color": "#fff",
         }}
@@ -181,6 +191,8 @@ const useJunctionUtils = () => {
               ) {
                 const [lng, lat] = feature.geometry.coordinates;
                 if (!Number.isFinite(lng) || !Number.isFinite(lat)) return null;
+                const markerColor =
+                  JUNCTION_CATEGORY_COLORS[category] || "#f59e42";
                 return (
                   <Marker
                     key={`${category}-junction-marker-${feature.id ?? idx}`}
@@ -198,7 +210,7 @@ const useJunctionUtils = () => {
                     >
                       <span
                         style={{
-                          background: "#f59e42",
+                          background: markerColor,
                           color: "#fff",
                           fontSize: 12,
                           padding: "2px 6px",
@@ -223,7 +235,7 @@ const useJunctionUtils = () => {
                             height: 0,
                             borderLeft: "6px solid transparent",
                             borderRight: "6px solid transparent",
-                            borderTop: "6px solid #f59e42",
+                            borderTop: `6px solid ${markerColor}`,
                             zIndex: 1,
                           }}
                         />

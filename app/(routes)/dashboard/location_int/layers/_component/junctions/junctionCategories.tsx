@@ -11,6 +11,7 @@ import { FeatureCollection, Feature } from "geojson";
 import JunctionDrawerDetails from "./JunctionDrawerDetails";
 import { setZoomToJunctionFeature } from "@/app/store/slice/map_junction.slice";
 import { cn } from "@/app/lib/tailwindLib";
+import { JUNCTION_CATEGORY_COLORS } from "@/app/_hooks/useJunctionUtils";
 
 interface IJunctionCategories {
   junction_type: JunctionType;
@@ -92,8 +93,16 @@ const JunctionCategories: FC<IJunctionCategories> = ({
     <div
       className={cn(
         "flex items-center justify-between p-2 border-b last:border-0",
-        isView && "bg-[#f59e42] text-white"
+        isView && "text-white"
       )}
+      style={
+        isView
+          ? {
+              backgroundColor:
+                JUNCTION_CATEGORY_COLORS[junction_type] || "#f59e42",
+            }
+          : {}
+      }
     >
       <Typography variant="subtitle1" gutterBottom>
         {junction_title}
