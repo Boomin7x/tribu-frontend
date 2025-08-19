@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Coordinates, GeoJSON } from "../_utils/types";
+import { setGlobalBbox } from "../store/slice/globalBbox.slice";
+import { useDispatch } from "react-redux";
 export interface GeocodeResponse {
   coordinates: Coordinates;
   text: string;
@@ -12,7 +14,7 @@ const useGeocode = () => {
     undefined
   );
   const [error, setError] = useState<string | null>(null);
-
+  const dispatch = useDispatch();
   const geocode = async (address: string) => {
     // const env = import.meta.env;
 
@@ -27,7 +29,9 @@ const useGeocode = () => {
       const data: GeoJSON = await response.json();
 
       if (data.features && data.features.length > 0) {
-        const { center, place_name, text } = data.features[0]; // 'center' contains the [longitude, latitude] array
+        const { center, place_name, text, bbox } = data.features[0]; // 'center' contains the [longitude, latitude] array
+        console.log("bbox from Address", bbox);
+        dispatch(setGlobalBbox({ bbox }));
         setGeoData({
           coordinates: { latitude: center[1], longitude: center[0] },
           place_name,

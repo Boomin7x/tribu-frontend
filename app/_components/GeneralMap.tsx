@@ -213,6 +213,7 @@ const GeneralMapsComponent = () => {
     onRoadMapClick(e);
     onJunctionMapClick(e);
   };
+
   const onMapHover = (e: any) => {
     const feature = e.features && e.features[0];
     if (feature) {
