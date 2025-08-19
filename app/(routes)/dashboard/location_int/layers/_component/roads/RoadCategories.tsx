@@ -24,11 +24,17 @@ const RoadCategories: FC<IRoadCategories> = ({ category }) => {
   const dispatch = useDispatch();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isView, setIsView] = useUrlState(category, false);
+  // const globalBbox = useSelector(
+  //   (state: RootState) => state.globalBbox.bbox,
+  //   shallowEqual
+  // );
 
   const { data, isLoading } = useGetCategoryRoads(
     {
       category,
-      bbox: "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
+      bbox:
+        // globalBbox?.join(",") ??
+        "0.703125, 1.2852925793638545, 28.828125, 14.9341698993427",
       limit: 50,
     },
     isView

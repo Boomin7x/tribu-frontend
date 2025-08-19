@@ -1,6 +1,5 @@
 import { bbox } from "@/app/_utils";
 import { convertFakeDataCoordinates } from "@/app/_utils/coordinateUtils";
-import { setZoomToFeature } from "@/app/store/slice/map.slice";
 import {
   MapCategoryState,
   setFeatures,
@@ -11,10 +10,7 @@ import { Feature, FeatureCollection } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { findDensestCell } from "../../_utils";
-import {
-  useGetBuildingByCategory,
-  useGetInfinityBuildingsByCategory,
-} from "./useGetBuildingByCategory";
+import { useGetBuildingByCategory } from "./useGetBuildingByCategory";
 
 interface IUseBuildingCategoriesUtils {
   category: string;
@@ -24,7 +20,7 @@ const useBuildingCategoriesUtils = ({
 }: IUseBuildingCategoriesUtils) => {
   const dispatch = useDispatch();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [limit, setLimit] = useState(35);
+  const [, setLimit] = useState(35);
 
   const globalBbox = useSelector(
     (state: RootState) => state.globalBbox.bbox,
