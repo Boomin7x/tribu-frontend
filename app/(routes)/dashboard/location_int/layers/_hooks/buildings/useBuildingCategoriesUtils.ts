@@ -20,7 +20,7 @@ const useBuildingCategoriesUtils = ({
 }: IUseBuildingCategoriesUtils) => {
   const dispatch = useDispatch();
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [, setLimit] = useState(35);
+  const [limit, setLimit] = useState(100);
 
   const globalBbox = useSelector(
     (state: RootState) => state.globalBbox.bbox,
@@ -52,7 +52,7 @@ const useBuildingCategoriesUtils = ({
     {
       bbox: globalBbox?.join(",") ?? bbox.params,
       building_category: category,
-      // limit,
+      limit,
     },
     true
   );
